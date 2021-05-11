@@ -153,6 +153,7 @@ void game_state::apply_move(const move &m)
   pieces[current_player - 1].set(m.mr);
 
   last_moved = m.mr;
+  last_pos   = m.pos;
 
   if (win_condition())
   {
@@ -182,16 +183,9 @@ void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& mo
 
   size_t cnt = moves.size()-1;
 
-  for (size_t i=0;i<cnt;i++)
-  {
-    if (moves[i].mr == last_moved)
-    {
-      moves[i].mr   ^= moves[cnt].mr;
-      moves[cnt].mr ^= moves[i].mr;
-      moves[i].mr   ^= moves[cnt].mr;
-      break;
-    }
-  }
+  moves[last_pos].mr ^= moves[cnt].mr;
+  moves[cnt].mr      ^= moves[last_pos].mr;
+  moves[last_pos].mr ^= moves[cnt].mr;
 
   moves.pop_back();
 }

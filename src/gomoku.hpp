@@ -20,12 +20,24 @@ class resettable_bitarray_stack {};
 
 struct move
 {
-  uint32_t mr;
+  uint32_t mr, pos;
 
   move(void) = default;
-  move(uint32_t _mr) : mr(_mr) {};
+  constexpr move(uint32_t _mr, uint32_t _pos) : mr(_mr), pos(_pos) {};
   bool operator==(const move& rhs) const;
 };
+
+constexpr std::array<move, BOARD_SIZE> fill_empty()
+{
+  std::array<move, BOARD_SIZE> result{};
+
+  for (uint32_t i=0;i<BOARD_SIZE;i++)
+  {
+    result[i] = move(i,i);
+  }
+
+  return result;
+}
 
 template<uint32_t N> struct subset
 {
@@ -63,23 +75,12 @@ private:
 
   uint32_t current_player = 1;
   uint32_t last_moved     = 0;
+  uint32_t last_pos       = 0;
 
   bool exit = false;
 
   uint32_t variables[NUMBER_OF_VARIABLES] = {50, 50};
 
-  constexpr std::array<move, BOARD_SIZE> fill_index_to_mask()
-  {
-    std::array<move, BOARD_SIZE> result{};
-
-    for (uint32_t i=0;i<BOARD_SIZE;i++)
-    {
-      result[i] = i;
-    }
-
-    return result;
-  }
-
-  const std::array<move, BOARD_SIZE> empty = fill_index_to_mask();
+  static constexpr std::array<move, BOARD_SIZE> empty = fill_empty();
 };
 }
