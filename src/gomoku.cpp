@@ -1,5 +1,5 @@
 #include "reasoner.hpp"
-
+#include <iostream>
 namespace reasoner
 {
 
@@ -20,12 +20,21 @@ bool game_state::apply_any_move(resettable_bitarray_stack&)
 
 int game_state::get_monotonicity_class(void)
 {
-  return -1;
+  if (exit)
+  {
+    return -1;
+  }
+
+  return current_player -1;
 }
 
 bool game_state::is_legal([[maybe_unused]] const move& m) const
 {
-  return false;
+  #ifdef MONOTONIC
+  return not_visited[m.mr] && !exit;
+  #else
+  return -1;
+  #endif
 }
 
 bool game_state::win_condition()
@@ -153,7 +162,11 @@ void game_state::apply_move(const move &m)
   pieces[current_player - 1].set(m.mr);
 
   last_moved = m.mr;
+  #ifndef MONOTONIC
   last_pos   = m.pos;
+  #else
+  not_visited[m.pos] = false;
+  #endif
 
   if (win_condition())
   {
@@ -167,26 +180,38 @@ void game_state::apply_move(const move &m)
 
 void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& moves)
 {
+  moves.clear();
+  // #ifndef MONOTONIC
   if (exit)
   {
-    moves.clear();
-
     return;
   }
-
+  // #endif
+  #ifndef MONOTONIC
+  if (org_moves.size() == 0)
+  #else
   if (moves.size() == 0)
+  #endif
   {
     moves.insert(moves.begin(), std::begin(empty), std::end(empty));
-
+    #ifndef MONOTONIC
+    org_moves.insert(org_moves.begin(), std::begin(empty), std::end(empty));
+    #else
+    not_visited.resize(BOARD_SIZE, true);
+    #endif
     return;
   }
 
-  size_t cnt = moves.size()-1;
+  #ifndef MONOTONIC
+  size_t cnt = org_moves.size()-1;
 
-  moves[last_pos].mr ^= moves[cnt].mr;
-  moves[cnt].mr      ^= moves[last_pos].mr;
-  moves[last_pos].mr ^= moves[cnt].mr;
+  org_moves[last_pos].mr ^= org_moves[cnt].mr;
+  org_moves[cnt].mr      ^= org_moves[last_pos].mr;
+  org_moves[last_pos].mr ^= org_moves[cnt].mr;
 
-  moves.pop_back();
+  org_moves.pop_back();
+
+  moves.insert(moves.begin(), org_moves.begin(), org_moves.end());
+  #endif
 }
 }

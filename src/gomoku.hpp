@@ -9,10 +9,17 @@
 
 #define BOARD_SIZE BOARD_ROWS*BOARD_ROWS
 
+#define MONOTONIC
+
 namespace reasoner
 {
 constexpr int NUMBER_OF_PLAYERS   = 3;
+#ifdef MONOTONIC
+constexpr int MONOTONIC_CLASSES   = 2;
+#else
 constexpr int MONOTONIC_CLASSES   = 0;
+#endif
+
 constexpr int NUMBER_OF_VARIABLES = 2;
 constexpr int NUMBER_OF_PIECES    = 2;
 constexpr uint64_t bit_mask = (1 << 6) -1;
@@ -74,13 +81,20 @@ private:
   board pieces[2] = {0};
 
   uint32_t current_player = 1;
+
   uint32_t last_moved     = 0;
+  #ifndef MONOTONIC
   uint32_t last_pos       = 0;
+  #endif
 
   bool exit = false;
 
   uint32_t variables[NUMBER_OF_VARIABLES] = {50, 50};
-
+  #ifdef MONOTONIC
+  std::vector<bool>not_visited;
+  #else
+  std::vector<move> org_moves;
+  #endif
   static constexpr std::array<move, BOARD_SIZE> empty = fill_empty();
 };
 }
