@@ -42,26 +42,26 @@ bool game_state::is_legal([[maybe_unused]] const move& m) const
   return false;
 }
 
-bool game_state::check(uint32_t pos, uint32_t player)
+inline bool game_state::check(uint32_t pos, uint32_t player)
 {
   board &b = pieces[player];
 
   int x = pos%BOARD_ROWS;
   int y = pos/BOARD_ROWS;
 
-  if ((uint64_t)b.get(pos))
+  if (b.get(pos))
   {
     return false;
   }
 
-  if ((x+1<(BOARD_ROWS-1) && (uint64_t)b.get(y*BOARD_ROWS+x+1)) &&
-      (x-1>0 && (uint64_t)b.get(y*BOARD_ROWS+x-1)) &&
-      (y+1<(BOARD_ROWS-1) && (uint64_t)b.get((y+1)*BOARD_ROWS+x)) &&
-      (y-1>0 && (uint64_t)b.get((y-1)*BOARD_ROWS+x)) &&
-      (y+1<(BOARD_ROWS-1) && x+1<(BOARD_ROWS-1) && (uint64_t)b.get((y+1)*BOARD_ROWS+x+1)) &&
-      (y-1>0 && x-1>0 && (uint64_t)b.get((y-1)*BOARD_ROWS+x-1)) &&
-      (y+1<(BOARD_ROWS-1) && x-1>0 && (uint64_t)b.get((y+1)*BOARD_ROWS+x-1)) &&
-      (y-1>0 && x+1<(BOARD_ROWS-1) && (uint64_t)b.get((y-1)*BOARD_ROWS+x+1)))
+  if ((x+1<(BOARD_ROWS-1) && b.get(y*BOARD_ROWS+x+1)) &&
+      (x-1>0 && b.get(y*BOARD_ROWS+x-1)) &&
+      (y+1<(BOARD_ROWS-1) && b.get((y+1)*BOARD_ROWS+x)) &&
+      (y-1>0 && b.get((y-1)*BOARD_ROWS+x)) &&
+      (y+1<(BOARD_ROWS-1) && x+1<(BOARD_ROWS-1) && b.get((y+1)*BOARD_ROWS+x+1)) &&
+      (y-1>0 && x-1>0 && b.get((y-1)*BOARD_ROWS+x-1)) &&
+      (y+1<(BOARD_ROWS-1) && x-1>0 && b.get((y+1)*BOARD_ROWS+x-1)) &&
+      (y-1>0 && x+1<(BOARD_ROWS-1) && b.get((y-1)*BOARD_ROWS+x+1)))
   {
     return true;
   }
@@ -88,7 +88,7 @@ void game_state::clear_pos(uint32_t pos, uint32_t player)
 {
   board &b = pieces[player];
 
-  if ((uint64_t)b.get(pos))
+  if (b.get(pos))
   {
     b.reset(pos);
   }
@@ -96,38 +96,38 @@ void game_state::clear_pos(uint32_t pos, uint32_t player)
   int x = pos%BOARD_ROWS;
   int y = pos/BOARD_ROWS;
 
-  if (x+1<(BOARD_ROWS-1) && (uint64_t)b.get(y*BOARD_ROWS+x+1))
+  if (x+1<(BOARD_ROWS-1) && b.get(y*BOARD_ROWS+x+1))
   {
     b.reset(y*BOARD_ROWS+x+1);
   }
-  if (x-1>0 && (uint64_t)b.get(y*BOARD_ROWS+x-1))
+  if (x-1>0 && b.get(y*BOARD_ROWS+x-1))
   {
     b.reset(y*BOARD_ROWS+x-1);
   }
 
-  if (y+1<(BOARD_ROWS-1) && (uint64_t)b.get((y+1)*BOARD_ROWS+x))
+  if (y+1<(BOARD_ROWS-1) && b.get((y+1)*BOARD_ROWS+x))
   {
     b.reset((y+1)*BOARD_ROWS+x);
   }
-  if (y-1>0 && (uint64_t)b.get((y-1)*BOARD_ROWS+x))
+  if (y-1>0 && b.get((y-1)*BOARD_ROWS+x))
   {
     b.reset((y-1)*BOARD_ROWS+x);
   }
 
-  if (y+1<(BOARD_ROWS-1) && x+1<(BOARD_ROWS-1) && (uint64_t)b.get((y+1)*BOARD_ROWS+x+1))
+  if (y+1<(BOARD_ROWS-1) && x+1<(BOARD_ROWS-1) && b.get((y+1)*BOARD_ROWS+x+1))
   {
     b.reset((y+1)*BOARD_ROWS+x+1);
   }
-  if (y-1>0 && x-1>0 && (uint64_t)b.get((y-1)*BOARD_ROWS+x-1))
+  if (y-1>0 && x-1>0 && b.get((y-1)*BOARD_ROWS+x-1))
   {
     b.reset((y-1)*BOARD_ROWS+x-1);
   }
 
-  if (y+1<(BOARD_ROWS-1) && x-1>0 && (uint64_t)b.get((y+1)*BOARD_ROWS+x-1))
+  if (y+1<(BOARD_ROWS-1) && x-1>0 && b.get((y+1)*BOARD_ROWS+x-1))
   {
     b.reset((y+1)*BOARD_ROWS+x-1);
   }
-  if (y-1>0 && x+1<(BOARD_ROWS-1) && (uint64_t)b.get((y-1)*BOARD_ROWS+x+1))
+  if (y-1>0 && x+1<(BOARD_ROWS-1) && b.get((y-1)*BOARD_ROWS+x+1))
   {
     b.reset((y-1)*BOARD_ROWS+x+1);
   }
@@ -137,7 +137,7 @@ void game_state::set_pos(uint32_t start, uint32_t pos, board bcp)
 {
   board &b = pieces[current_player-1];
 
-  if ((uint64_t)bcp.get(start))
+  if (bcp.get(start))
   {
     b.set(pos);
   }
@@ -148,42 +148,42 @@ void game_state::set_pos(uint32_t start, uint32_t pos, board bcp)
   int xs = start%BOARD_ROWS;
   int ys = start/BOARD_ROWS;
 
-  if (x+1<(BOARD_ROWS-1) && xs+1<(BOARD_ROWS-1) && (uint64_t)bcp.get(ys*BOARD_ROWS+xs+1))
+  if (x+1<(BOARD_ROWS-1) && xs+1<(BOARD_ROWS-1) && bcp.get(ys*BOARD_ROWS+xs+1))
   {
     b.set(y*BOARD_ROWS+x+1);
   }
 
-  if (x-1>0 &&  xs-1>0 &&  (uint64_t)bcp.get(ys*BOARD_ROWS+xs-1))
+  if (x-1>0 &&  xs-1>0 &&  bcp.get(ys*BOARD_ROWS+xs-1))
   {
     b.set(y*BOARD_ROWS+x-1);
   }
 
-  if (y+1<(BOARD_ROWS-1) && ys+1<(BOARD_ROWS-1) && (uint64_t)bcp.get((ys+1)*BOARD_ROWS+xs))
+  if (y+1<(BOARD_ROWS-1) && ys+1<(BOARD_ROWS-1) && bcp.get((ys+1)*BOARD_ROWS+xs))
   {
     b.set((y+1)*BOARD_ROWS+x);
   }
 
-  if (y-1>0 &&  ys-1>0 &&  (uint64_t)bcp.get((ys-1)*BOARD_ROWS+xs))
+  if (y-1>0 &&  ys-1>0 &&  bcp.get((ys-1)*BOARD_ROWS+xs))
   {
     b.set((y-1)*BOARD_ROWS+x);
   }
 
-  if ( y+1<(BOARD_ROWS-1) && x+1<(BOARD_ROWS-1) &&  ys+1<(BOARD_ROWS-1) && xs+1<(BOARD_ROWS-1) && (uint64_t)bcp.get((ys+1)*BOARD_ROWS+xs+1))
+  if ( y+1<(BOARD_ROWS-1) && x+1<(BOARD_ROWS-1) &&  ys+1<(BOARD_ROWS-1) && xs+1<(BOARD_ROWS-1) && bcp.get((ys+1)*BOARD_ROWS+xs+1))
   {
     b.set((y+1)*BOARD_ROWS+x+1);
   }
 
-  if (y-1>0 && x-1>0  && ys-1>0 && xs-1>0 && (uint64_t)bcp.get((ys-1)*BOARD_ROWS+xs-1))
+  if (y-1>0 && x-1>0  && ys-1>0 && xs-1>0 && bcp.get((ys-1)*BOARD_ROWS+xs-1))
   {
     b.set((y-1)*BOARD_ROWS+x-1);
   }
 
-  if (y+1<(BOARD_ROWS-1) && x-1>0 && ys+1<(BOARD_ROWS-1) && xs-1>0 && (uint64_t)bcp.get((ys+1)*BOARD_ROWS+xs-1))
+  if (y+1<(BOARD_ROWS-1) && x-1>0 && ys+1<(BOARD_ROWS-1) && xs-1>0 && bcp.get((ys+1)*BOARD_ROWS+xs-1))
   {
     b.set((y+1)*BOARD_ROWS+x-1);
   }
 
-  if (y-1>0 && x+1<(BOARD_ROWS-1) &&  ys-1>0 && xs+1<(BOARD_ROWS-1) &&  (uint64_t)bcp.get((ys-1)*BOARD_ROWS+xs+1))
+  if (y-1>0 && x+1<(BOARD_ROWS-1) &&  ys-1>0 && xs+1<(BOARD_ROWS-1) &&  bcp.get((ys-1)*BOARD_ROWS+xs+1))
   {
     b.set((y-1)*BOARD_ROWS+x+1);
   }
@@ -271,11 +271,11 @@ void game_state::add_moves(footprint &fp, std::vector<move>& moves)
 
       if (yt + 1 < (BOARD_ROWS-1))
       {
-        if ((uint64_t)b.get((yt+1)*BOARD_ROWS+xt) || (uint64_t)b.get((yt+1)*BOARD_ROWS+max(1,xt-1)) || (uint64_t)b.get((yt+1)*BOARD_ROWS+min(xt+1,BOARD_ROWS-1)))
+        if (b.get((yt+1)*BOARD_ROWS+xt) || b.get((yt+1)*BOARD_ROWS+max(1,xt-1)) || b.get((yt+1)*BOARD_ROWS+min(xt+1,BOARD_ROWS-1)))
         {
           break;
         }
-        if ((uint64_t)bo.get((yt+1)*BOARD_ROWS+xt) || (uint64_t)bo.get((yt+1)*BOARD_ROWS+max(1,xt-1)) || (uint64_t)bo.get((yt+1)*BOARD_ROWS+min(xt+1,BOARD_ROWS-1)))
+        if (bo.get((yt+1)*BOARD_ROWS+xt) || bo.get((yt+1)*BOARD_ROWS+max(1,xt-1)) || bo.get((yt+1)*BOARD_ROWS+min(xt+1,BOARD_ROWS-1)))
         {
           break;
         }
@@ -294,11 +294,11 @@ void game_state::add_moves(footprint &fp, std::vector<move>& moves)
       moves.emplace_back(fp.pos, yt*BOARD_ROWS+xt);
       if (yt -1 >0)
       {
-        if ((uint64_t)b.get((yt-1)*BOARD_ROWS+xt) || (uint64_t)b.get((yt-1)*BOARD_ROWS+max(1,xt-1)) || (uint64_t)b.get((yt-1)*BOARD_ROWS+min(xt+1,BOARD_ROWS-1)))
+        if (b.get((yt-1)*BOARD_ROWS+xt) || b.get((yt-1)*BOARD_ROWS+max(1,xt-1)) || b.get((yt-1)*BOARD_ROWS+min(xt+1,BOARD_ROWS-1)))
         {
           break;
         }
-        if ((uint64_t)bo.get((yt-1)*BOARD_ROWS+xt) || (uint64_t)bo.get((yt-1)*BOARD_ROWS+max(1,xt-1)) || (uint64_t)bo.get((yt-1)*BOARD_ROWS+min(xt+1,BOARD_ROWS-1)))
+        if (bo.get((yt-1)*BOARD_ROWS+xt) || bo.get((yt-1)*BOARD_ROWS+max(1,xt-1)) || bo.get((yt-1)*BOARD_ROWS+min(xt+1,BOARD_ROWS-1)))
         {
           break;
         }
@@ -317,11 +317,11 @@ void game_state::add_moves(footprint &fp, std::vector<move>& moves)
       moves.emplace_back(fp.pos, yt*BOARD_ROWS+xt);
       if (xt -1 >0)
       {
-        if ((uint64_t)b.get(yt*BOARD_ROWS+xt-1) || (uint64_t)b.get(max(yt-1,1)*BOARD_ROWS+xt-1) || (uint64_t)b.get(min(yt+1,BOARD_ROWS-1)*BOARD_ROWS+xt-1))
+        if (b.get(yt*BOARD_ROWS+xt-1) || b.get(max(yt-1,1)*BOARD_ROWS+xt-1) || b.get(min(yt+1,BOARD_ROWS-1)*BOARD_ROWS+xt-1))
         {
           break;
         }
-        if ((uint64_t)bo.get(yt*BOARD_ROWS+xt-1) || (uint64_t)bo.get(max(yt-1,1)*BOARD_ROWS+xt-1) || (uint64_t)bo.get(min(yt+1,BOARD_ROWS-1)*BOARD_ROWS+xt-1))
+        if (bo.get(yt*BOARD_ROWS+xt-1) || bo.get(max(yt-1,1)*BOARD_ROWS+xt-1) || bo.get(min(yt+1,BOARD_ROWS-1)*BOARD_ROWS+xt-1))
         {
           break;
         }
@@ -340,11 +340,11 @@ void game_state::add_moves(footprint &fp, std::vector<move>& moves)
       moves.emplace_back(fp.pos, yt*BOARD_ROWS+xt);
       if (xt+1 < (BOARD_ROWS-1))
       {
-        if ((uint64_t)b.get(yt*BOARD_ROWS+xt+1) || (uint64_t)b.get(max(yt-1,1)*BOARD_ROWS+xt+1) || (uint64_t)b.get(min(yt+1,BOARD_ROWS-1)*BOARD_ROWS+xt+1))
+        if (b.get(yt*BOARD_ROWS+xt+1) || b.get(max(yt-1,1)*BOARD_ROWS+xt+1) || b.get(min(yt+1,BOARD_ROWS-1)*BOARD_ROWS+xt+1))
         {
           break;
         }
-        if ((uint64_t)bo.get(yt*BOARD_ROWS+xt+1) || (uint64_t)bo.get(max(yt-1,1)*BOARD_ROWS+xt+1) || (uint64_t)bo.get(min(yt+1,BOARD_ROWS-1)*BOARD_ROWS+xt+1))
+        if (bo.get(yt*BOARD_ROWS+xt+1) || bo.get(max(yt-1,1)*BOARD_ROWS+xt+1) || bo.get(min(yt+1,BOARD_ROWS-1)*BOARD_ROWS+xt+1))
         {
           break;
         }
@@ -362,22 +362,22 @@ void game_state::add_moves(footprint &fp, std::vector<move>& moves)
       moves.emplace_back(fp.pos, yt*BOARD_ROWS+xt);
       if (xt+1 < (BOARD_ROWS-1))
       {
-        if ((uint64_t)b.get(yt*BOARD_ROWS+xt+1) || (uint64_t)b.get(max(yt-1,1)*BOARD_ROWS+xt+1) || (uint64_t)b.get(min(yt+1,BOARD_ROWS-1)*BOARD_ROWS+xt+1))
+        if (b.get(yt*BOARD_ROWS+xt+1) || b.get(max(yt-1,1)*BOARD_ROWS+xt+1) || b.get(min(yt+1,BOARD_ROWS-1)*BOARD_ROWS+xt+1))
         {
           break;
         }
-        if ((uint64_t)bo.get(yt*BOARD_ROWS+xt+1) || (uint64_t)bo.get(max(yt-1,1)*BOARD_ROWS+xt+1) || (uint64_t)bo.get(min(yt+1,BOARD_ROWS-1)*BOARD_ROWS+xt+1))
+        if (bo.get(yt*BOARD_ROWS+xt+1) || bo.get(max(yt-1,1)*BOARD_ROWS+xt+1) || bo.get(min(yt+1,BOARD_ROWS-1)*BOARD_ROWS+xt+1))
         {
           break;
         }
       }
       if (yt + 1 < (BOARD_ROWS-1))
       {
-        if ((uint64_t)b.get((yt+1)*BOARD_ROWS+xt) || (uint64_t)b.get((yt+1)*BOARD_ROWS+max(1,xt-1)) || (uint64_t)b.get((yt+1)*BOARD_ROWS+min(xt+1,BOARD_ROWS-1)))
+        if (b.get((yt+1)*BOARD_ROWS+xt) || b.get((yt+1)*BOARD_ROWS+max(1,xt-1)) || b.get((yt+1)*BOARD_ROWS+min(xt+1,BOARD_ROWS-1)))
         {
           break;
         }
-        if ((uint64_t)bo.get((yt+1)*BOARD_ROWS+xt) || (uint64_t)bo.get((yt+1)*BOARD_ROWS+max(1,xt-1)) || (uint64_t)bo.get((yt+1)*BOARD_ROWS+min(xt+1,BOARD_ROWS-1)))
+        if (bo.get((yt+1)*BOARD_ROWS+xt) || bo.get((yt+1)*BOARD_ROWS+max(1,xt-1)) || bo.get((yt+1)*BOARD_ROWS+min(xt+1,BOARD_ROWS-1)))
         {
           break;
         }
@@ -397,22 +397,22 @@ void game_state::add_moves(footprint &fp, std::vector<move>& moves)
       moves.emplace_back(fp.pos, yt*BOARD_ROWS+xt);
       if (xt -1 >0)
       {
-        if ((uint64_t)b.get(yt*BOARD_ROWS+xt-1) || (uint64_t)b.get(max(yt-1,1)*BOARD_ROWS+xt-1) || (uint64_t)b.get(min(yt+1,BOARD_ROWS-1)*BOARD_ROWS+xt-1))
+        if (b.get(yt*BOARD_ROWS+xt-1) || b.get(max(yt-1,1)*BOARD_ROWS+xt-1) || b.get(min(yt+1,BOARD_ROWS-1)*BOARD_ROWS+xt-1))
         {
           break;
         }
-        if ((uint64_t)bo.get(yt*BOARD_ROWS+xt-1) || (uint64_t)bo.get(max(yt-1,1)*BOARD_ROWS+xt-1) || (uint64_t)bo.get(min(yt+1,BOARD_ROWS-1)*BOARD_ROWS+xt-1))
+        if (bo.get(yt*BOARD_ROWS+xt-1) || bo.get(max(yt-1,1)*BOARD_ROWS+xt-1) || bo.get(min(yt+1,BOARD_ROWS-1)*BOARD_ROWS+xt-1))
         {
           break;
         }
       }
       if (yt + 1 < (BOARD_ROWS-1))
       {
-        if ((uint64_t)b.get((yt+1)*BOARD_ROWS+xt) || (uint64_t)b.get((yt+1)*BOARD_ROWS+max(1,xt-1)) || (uint64_t)b.get((yt+1)*BOARD_ROWS+min(xt+1,BOARD_ROWS-1)))
+        if (b.get((yt+1)*BOARD_ROWS+xt) || b.get((yt+1)*BOARD_ROWS+max(1,xt-1)) || b.get((yt+1)*BOARD_ROWS+min(xt+1,BOARD_ROWS-1)))
         {
           break;
         }
-        if ((uint64_t)bo.get((yt+1)*BOARD_ROWS+xt) || (uint64_t)bo.get((yt+1)*BOARD_ROWS+max(1,xt-1)) || (uint64_t)bo.get((yt+1)*BOARD_ROWS+min(xt+1,BOARD_ROWS-1)))
+        if (bo.get((yt+1)*BOARD_ROWS+xt) || bo.get((yt+1)*BOARD_ROWS+max(1,xt-1)) || bo.get((yt+1)*BOARD_ROWS+min(xt+1,BOARD_ROWS-1)))
         {
           break;
         }
@@ -430,22 +430,22 @@ void game_state::add_moves(footprint &fp, std::vector<move>& moves)
       moves.emplace_back(fp.pos, yt*BOARD_ROWS+xt);
       if (xt+1 < (BOARD_ROWS-1))
       {
-        if ((uint64_t)b.get(yt*BOARD_ROWS+xt+1) || (uint64_t)b.get(max(yt-1,1)*BOARD_ROWS+xt+1) || (uint64_t)b.get(min(yt+1,BOARD_ROWS-1)*BOARD_ROWS+xt+1))
+        if (b.get(yt*BOARD_ROWS+xt+1) || b.get(max(yt-1,1)*BOARD_ROWS+xt+1) || b.get(min(yt+1,BOARD_ROWS-1)*BOARD_ROWS+xt+1))
         {
           break;
         }
-        if ((uint64_t)bo.get(yt*BOARD_ROWS+xt+1) || (uint64_t)bo.get(max(yt-1,1)*BOARD_ROWS+xt+1) || (uint64_t)bo.get(min(yt+1,BOARD_ROWS-1)*BOARD_ROWS+xt+1))
+        if (bo.get(yt*BOARD_ROWS+xt+1) || bo.get(max(yt-1,1)*BOARD_ROWS+xt+1) || bo.get(min(yt+1,BOARD_ROWS-1)*BOARD_ROWS+xt+1))
         {
           break;
         }
       }
       if (yt -1 >0)
       {
-        if ((uint64_t)b.get((yt-1)*BOARD_ROWS+xt) || (uint64_t)b.get((yt-1)*BOARD_ROWS+max(1,xt-1)) || (uint64_t)b.get((yt-1)*BOARD_ROWS+min(xt+1,BOARD_ROWS-1)))
+        if (b.get((yt-1)*BOARD_ROWS+xt) || b.get((yt-1)*BOARD_ROWS+max(1,xt-1)) || b.get((yt-1)*BOARD_ROWS+min(xt+1,BOARD_ROWS-1)))
         {
           break;
         }
-        if ((uint64_t)bo.get((yt-1)*BOARD_ROWS+xt) || (uint64_t)bo.get((yt-1)*BOARD_ROWS+max(1,xt-1)) || (uint64_t)bo.get((yt-1)*BOARD_ROWS+min(xt+1,BOARD_ROWS-1)))
+        if (bo.get((yt-1)*BOARD_ROWS+xt) || bo.get((yt-1)*BOARD_ROWS+max(1,xt-1)) || bo.get((yt-1)*BOARD_ROWS+min(xt+1,BOARD_ROWS-1)))
         {
           break;
         }
@@ -463,11 +463,11 @@ void game_state::add_moves(footprint &fp, std::vector<move>& moves)
       moves.emplace_back(fp.pos, yt*BOARD_ROWS+xt);
       if (xt -1 >0)
       {
-        if ((uint64_t)b.get(yt*BOARD_ROWS+xt-1) || (uint64_t)b.get(max(yt-1,1)*BOARD_ROWS+xt-1) || (uint64_t)b.get(min(yt+1,BOARD_ROWS-1)*BOARD_ROWS+xt-1))
+        if (b.get(yt*BOARD_ROWS+xt-1) || b.get(max(yt-1,1)*BOARD_ROWS+xt-1) || b.get(min(yt+1,BOARD_ROWS-1)*BOARD_ROWS+xt-1))
         {
           break;
         }
-        if ((uint64_t)bo.get(yt*BOARD_ROWS+xt-1) || (uint64_t)bo.get(max(yt-1,1)*BOARD_ROWS+xt-1) || (uint64_t)bo.get(min(yt+1,BOARD_ROWS-1)*BOARD_ROWS+xt-1))
+        if (bo.get(yt*BOARD_ROWS+xt-1) || bo.get(max(yt-1,1)*BOARD_ROWS+xt-1) || bo.get(min(yt+1,BOARD_ROWS-1)*BOARD_ROWS+xt-1))
         {
           break;
         }
@@ -475,11 +475,11 @@ void game_state::add_moves(footprint &fp, std::vector<move>& moves)
 
       if (yt -1 >0)
       {
-        if ((uint64_t)b.get((yt-1)*BOARD_ROWS+xt) || (uint64_t)b.get((yt-1)*BOARD_ROWS+max(1,xt-1)) || (uint64_t)b.get((yt-1)*BOARD_ROWS+min(xt+1,BOARD_ROWS-1)))
+        if (b.get((yt-1)*BOARD_ROWS+xt) || b.get((yt-1)*BOARD_ROWS+max(1,xt-1)) || b.get((yt-1)*BOARD_ROWS+min(xt+1,BOARD_ROWS-1)))
         {
           break;
         }
-        if ((uint64_t)bo.get((yt-1)*BOARD_ROWS+xt) || (uint64_t)bo.get((yt-1)*BOARD_ROWS+max(1,xt-1)) || (uint64_t)bo.get((yt-1)*BOARD_ROWS+min(xt+1,BOARD_ROWS-1)))
+        if (bo.get((yt-1)*BOARD_ROWS+xt) || bo.get((yt-1)*BOARD_ROWS+max(1,xt-1)) || bo.get((yt-1)*BOARD_ROWS+min(xt+1,BOARD_ROWS-1)))
         {
           break;
         }
@@ -510,15 +510,15 @@ void game_state::create_moves(std::vector<move>& moves)
       int x = pos%BOARD_ROWS;
       int y = pos/BOARD_ROWS;
 
-      start2(pos,moves);
-      start2(y*BOARD_ROWS+x+1,moves);
-      start2(y*BOARD_ROWS+x-1,moves);
-      start2((y+1)*BOARD_ROWS+x,moves);
-      start2((y-1)*BOARD_ROWS+x,moves);
-      start2((y+1)*BOARD_ROWS+x-1,moves);
-      start2((y+1)*BOARD_ROWS+x+1,moves);
-      start2((y-1)*BOARD_ROWS+x+1,moves);
-      start2((y-1)*BOARD_ROWS+x-1,moves);
+      start(pos,moves);
+      start(y*BOARD_ROWS+x+1,moves);
+      start(y*BOARD_ROWS+x-1,moves);
+      start((y+1)*BOARD_ROWS+x,moves);
+      start((y-1)*BOARD_ROWS+x,moves);
+      start((y+1)*BOARD_ROWS+x-1,moves);
+      start((y+1)*BOARD_ROWS+x+1,moves);
+      start((y-1)*BOARD_ROWS+x+1,moves);
+      start((y-1)*BOARD_ROWS+x-1,moves);
 
 
       all ^= (uint64_t)1 << mv;
@@ -526,7 +526,7 @@ void game_state::create_moves(std::vector<move>& moves)
   }
 }
 
-inline void game_state::start2(int pos, std::vector<move> &moves)
+inline void game_state::start(int pos, std::vector<move> &moves)
 {
   if (visited[pos])
     return;
@@ -545,7 +545,7 @@ bool game_state::check_footprint(uint32_t pos)
 {
   board &b = pieces[(current_player^0b11)-1];
 
-  if ((uint64_t)b.get(pos))
+  if (b.get(pos))
   {
     return true;
   }
@@ -553,43 +553,43 @@ bool game_state::check_footprint(uint32_t pos)
   int x = pos%BOARD_ROWS;
   int y = pos/BOARD_ROWS;
 
-  if (x+1<(BOARD_ROWS-1) && (uint64_t)b.get(y*BOARD_ROWS+x+1))
+  if (x+1<(BOARD_ROWS-1) && b.get(y*BOARD_ROWS+x+1))
   {
     return true;
   }
 
-  if (x-1>0 && (uint64_t)b.get(y*BOARD_ROWS+x-1))
+  if (x-1>0 && b.get(y*BOARD_ROWS+x-1))
   {
     return true;
   }
 
-  if (y+1<(BOARD_ROWS-1) && (uint64_t)b.get((y+1)*BOARD_ROWS+x))
+  if (y+1<(BOARD_ROWS-1) && b.get((y+1)*BOARD_ROWS+x))
   {
     return true;
   }
 
-  if (y-1>0 && (uint64_t)b.get((y-1)*BOARD_ROWS+x))
+  if (y-1>0 && b.get((y-1)*BOARD_ROWS+x))
   {
     return true;
   }
 
-  if (y+1<(BOARD_ROWS-1) && x+1<(BOARD_ROWS-1) && (uint64_t)b.get((y+1)*BOARD_ROWS+x+1))
+  if (y+1<(BOARD_ROWS-1) && x+1<(BOARD_ROWS-1) && b.get((y+1)*BOARD_ROWS+x+1))
   {
     return true;
   }
 
-  if (y-1>0 && x-1>0 && (uint64_t)b.get((y-1)*BOARD_ROWS+x-1))
+  if (y-1>0 && x-1>0 && b.get((y-1)*BOARD_ROWS+x-1))
   {
     return true;
 
   }
 
-  if (y+1<(BOARD_ROWS-1) && x-1>0 && (uint64_t)b.get((y+1)*BOARD_ROWS+x-1))
+  if (y+1<(BOARD_ROWS-1) && x-1>0 && b.get((y+1)*BOARD_ROWS+x-1))
   {
     return true;
   }
 
-  if (y-1>0 && x+1<(BOARD_ROWS-1) && (uint64_t)b.get((y-1)*BOARD_ROWS+x+1))
+  if (y-1>0 && x+1<(BOARD_ROWS-1) && b.get((y-1)*BOARD_ROWS+x+1))
   {
     return true;
   }
@@ -603,7 +603,7 @@ void game_state::create_footprint(uint32_t pos, footprint &fp)
 
   fp.pos = pos;
 
-  if ((uint64_t)b.get(pos))
+  if (b.get(pos))
   {
     fp.cnt=20;
   }
@@ -611,42 +611,42 @@ void game_state::create_footprint(uint32_t pos, footprint &fp)
   int x = pos%BOARD_ROWS;
   int y = pos/BOARD_ROWS;
 
-  if (x+1<(BOARD_ROWS-1) && (uint64_t)b.get(y*BOARD_ROWS+x+1))
+  if (x+1<(BOARD_ROWS-1) && b.get(y*BOARD_ROWS+x+1))
   {
     fp.r = true;
   }
 
-  if (x-1>0 && (uint64_t)b.get(y*BOARD_ROWS+x-1))
+  if (x-1>0 && b.get(y*BOARD_ROWS+x-1))
   {
     fp.l = true;
   }
 
-  if (y+1<(BOARD_ROWS-1) && (uint64_t)b.get((y+1)*BOARD_ROWS+x))
+  if (y+1<(BOARD_ROWS-1) && b.get((y+1)*BOARD_ROWS+x))
   {
     fp.u = true;
   }
 
-  if (y-1>0 && (uint64_t)b.get((y-1)*BOARD_ROWS+x))
+  if (y-1>0 && b.get((y-1)*BOARD_ROWS+x))
   {
     fp.d = true;
   }
 
-  if (y+1<(BOARD_ROWS-1) && x+1<(BOARD_ROWS-1) && (uint64_t)b.get((y+1)*BOARD_ROWS+x+1))
+  if (y+1<(BOARD_ROWS-1) && x+1<(BOARD_ROWS-1) && b.get((y+1)*BOARD_ROWS+x+1))
   {
     fp.ur = true;
   }
 
-  if (y-1>0 && x-1>0 && (uint64_t)b.get((y-1)*BOARD_ROWS+x-1))
+  if (y-1>0 && x-1>0 && b.get((y-1)*BOARD_ROWS+x-1))
   {
     fp.dl = true;
   }
 
-  if (y+1<(BOARD_ROWS-1) && x-1>0 && (uint64_t)b.get((y+1)*BOARD_ROWS+x-1))
+  if (y+1<(BOARD_ROWS-1) && x-1>0 && b.get((y+1)*BOARD_ROWS+x-1))
   {
     fp.ul = true;
   }
 
-  if (y-1>0 && x+1<(BOARD_ROWS-1) && (uint64_t)b.get((y-1)*BOARD_ROWS+x+1))
+  if (y-1>0 && x+1<(BOARD_ROWS-1) && b.get((y-1)*BOARD_ROWS+x+1))
   {
     fp.dr = true;
   }

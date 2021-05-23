@@ -112,7 +112,7 @@ private:
 
   bool win_condition(uint32_t player);
   bool check_footprint(uint32_t pos);
-  bool check(uint32_t pos, uint32_t player);
+  inline bool check(uint32_t pos, uint32_t player);
 
   void create_footprint(uint32_t pos, footprint &fp);
   void add_moves(footprint &fp, std::vector<move>& moves);
@@ -120,8 +120,7 @@ private:
   void clear_pos(uint32_t pos, uint32_t player);
   void set_pos(uint32_t start,uint32_t pos, board bcp);
   void update_king(int pos);
-  void start(int pos, std::vector<move> &moves);
-  inline void start2(int pos, std::vector<move> &moves);
+  inline void start(int pos, std::vector<move> &moves);
 
   inline int msb(const uint64_t p)
   {
