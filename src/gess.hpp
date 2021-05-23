@@ -5,7 +5,7 @@
 
 #define STANDARD
 
-#define BOARD_ROWS 20
+#define BOARD_ROWS 22
 
 #define BOARD_SIZE (BOARD_ROWS*BOARD_ROWS)
 
@@ -22,7 +22,7 @@ constexpr int TMP = (BOARD_SIZE >> 6)+1;
 struct footprint
 {
   bool u,d,l,r,ul,ur,dl,dr;
-  uint32_t cnt,pos;
+  int cnt,pos;
   footprint() :
     u(false),d(false),l(false),r(false),ul(false),ur(false),dl(false),dr(false),cnt(4),pos(0){};
 };
@@ -92,17 +92,10 @@ private:
   int visited_cnt = 0;
 
   board pieces[2];
-  std::vector<int> king[2]= {{51}, {351}};
+  std::vector<int> king[2]= {{78}, {408}};
   int initial[2][43] =
-    {{22,24,26,27,28,29,30,31,32,33,35,37,
-      41,42,43,45,47,48,49,50,52,54,56,57,58,
-      62,64,66,67,68,69,70,71,72,73,75,77,
-      122,125,128,131,134,137},
-    {262,265,268,271,274,277,
-      322,324,326,327,328,329,330,331,332,333,335,337,
-      341,342,343,345,347,348,349,350,352,354,356,357,358,
-      362,364,366,367,368,369,370,371,372,373,375,377
-    }};
+    {{47,49,51,52,53,54,55,56,57,58,60,62,68,69,70,72,74,75,76,77,79,81,83,84,85,91,93,95,96,97,98,99,100,101,102,104,106,157,160,163,166,169,172},
+    {311,314,317,320,323,326,377,379,381,382,383,384,385,386,387,388,390,392,398,399,400,402,404,405,406,407,409,411,413,414,415,421,423,425,426,427,428,429,430,431,432,434,436}};
 
   uint32_t current_player = 2;
 
@@ -111,14 +104,14 @@ private:
   uint32_t variables[NUMBER_OF_VARIABLES] = {50, 50};
 
   bool win_condition(uint32_t player);
-  bool check_footprint(uint32_t pos);
-  inline bool check(uint32_t pos, uint32_t player);
+  bool check_footprint(int pos);
+  inline bool check(int pos, uint32_t player);
 
-  void create_footprint(uint32_t pos, footprint &fp);
+  void create_footprint(int pos, footprint &fp);
   void add_moves(footprint &fp, std::vector<move>& moves);
   void create_moves(std::vector<move>& moves);
-  void clear_pos(uint32_t pos, uint32_t player);
-  void set_pos(uint32_t start,uint32_t pos, board bcp);
+  void clear_pos(int pos, uint32_t player);
+  void set_pos(int start, int pos, board &bcp);
   void update_king(int pos);
   inline void start(int pos, std::vector<move> &moves);
 
