@@ -27,12 +27,12 @@ bool game_state::is_legal([[maybe_unused]] const move& m) const
   return false;
 }
 
-inline bool game_state::check(int pos, uint32_t player)
+inline bool game_state::check(uint32_t pos, uint32_t player)
 {
   board &b = pieces[player];
 
-  int x = pos%BOARD_ROWS;
-  int y = pos/BOARD_ROWS;
+  uint32_t x = pos%BOARD_ROWS;
+  uint32_t y = pos/BOARD_ROWS;
 
   if (b.get(pos))
   {
@@ -56,20 +56,20 @@ inline bool game_state::check(int pos, uint32_t player)
 
 bool game_state::win_condition(uint32_t player)
 {
-  while (king[player].size())
+  while (rings[player].size())
   {
-    if (check(king[player].back(),player))
+    if (check(rings[player].back(),player))
     {
       return false;
     }
 
-    king[player].pop_back();
+    rings[player].pop_back();
   }
 
   return true;
 }
 
-void game_state::clear_pos(int pos, uint32_t player)
+void game_state::clear_pos(uint32_t pos, uint32_t player)
 {
   board &b = pieces[player];
 
@@ -78,8 +78,8 @@ void game_state::clear_pos(int pos, uint32_t player)
     b.reset(pos);
   }
 
-  int x = pos%BOARD_ROWS;
-  int y = pos/BOARD_ROWS;
+  uint32_t x = pos%BOARD_ROWS;
+  uint32_t y = pos/BOARD_ROWS;
 
   if (b.get(y*BOARD_ROWS+x+1))
   {
@@ -122,66 +122,66 @@ void game_state::clear_pos(int pos, uint32_t player)
   }
 }
 
-void game_state::set_pos(int start, int pos, board &bcp)
+void game_state::set_pos(uint32_t start, uint32_t end, board &bcp)
 {
   board &b = pieces[current_player-1];
 
   if (bcp.get(start))
   {
-    b.set(pos);
+    b.set(end);
   }
 
-  int x = pos%BOARD_ROWS;
-  int y = pos/BOARD_ROWS;
+  uint32_t x = end%BOARD_ROWS;
+  uint32_t y = end/BOARD_ROWS;
 
-  int xs = start%BOARD_ROWS;
-  int ys = start/BOARD_ROWS;
+  uint32_t xs = start%BOARD_ROWS;
+  uint32_t ys = start/BOARD_ROWS;
 
-  if (x+1<(BOARD_ROWS-2) && xs+1<(BOARD_ROWS-2) && bcp.get(ys*BOARD_ROWS+xs+1))
+  if (x+1<(BOARD_ROWS-2) && bcp.get(ys*BOARD_ROWS+xs+1))
   {
     b.set(y*BOARD_ROWS+x+1);
   }
 
-  if (x-1>1 &&  xs-1>1 &&  bcp.get(ys*BOARD_ROWS+xs-1))
+  if (x-1>1 && bcp.get(ys*BOARD_ROWS+xs-1))
   {
     b.set(y*BOARD_ROWS+x-1);
   }
 
-  if (y+1<(BOARD_ROWS-2) && ys+1<(BOARD_ROWS-2) && bcp.get((ys+1)*BOARD_ROWS+xs))
+  if (y+1<(BOARD_ROWS-2) && bcp.get((ys+1)*BOARD_ROWS+xs))
   {
     b.set((y+1)*BOARD_ROWS+x);
   }
 
-  if (y-1>1 &&  ys-1>1 &&  bcp.get((ys-1)*BOARD_ROWS+xs))
+  if (y-1>1 && bcp.get((ys-1)*BOARD_ROWS+xs))
   {
     b.set((y-1)*BOARD_ROWS+x);
   }
 
-  if ( y+1<(BOARD_ROWS-2) && x+1<(BOARD_ROWS-2) &&  ys+1<(BOARD_ROWS-2) && xs+1<(BOARD_ROWS-2) && bcp.get((ys+1)*BOARD_ROWS+xs+1))
+  if ( y+1<(BOARD_ROWS-2) && x+1<(BOARD_ROWS-2) && bcp.get((ys+1)*BOARD_ROWS+xs+1))
   {
     b.set((y+1)*BOARD_ROWS+x+1);
   }
 
-  if (y-1>1 && x-1>1  && ys-1>1 && xs-1>1 && bcp.get((ys-1)*BOARD_ROWS+xs-1))
+  if (y-1>1 && x-1>1  && bcp.get((ys-1)*BOARD_ROWS+xs-1))
   {
     b.set((y-1)*BOARD_ROWS+x-1);
   }
 
-  if (y+1<(BOARD_ROWS-2) && x-1>1 && ys+1<(BOARD_ROWS-2) && xs-1>1 && bcp.get((ys+1)*BOARD_ROWS+xs-1))
+  if (y+1<(BOARD_ROWS-2) && x-1>1 && bcp.get((ys+1)*BOARD_ROWS+xs-1))
   {
     b.set((y+1)*BOARD_ROWS+x-1);
   }
 
-  if (y-1>1 && x+1<(BOARD_ROWS-2) &&  ys-1>1 && xs+1<(BOARD_ROWS-2) &&  bcp.get((ys-1)*BOARD_ROWS+xs+1))
+  if (y-1>1 && x+1<(BOARD_ROWS-2) &&  bcp.get((ys-1)*BOARD_ROWS+xs+1))
   {
     b.set((y-1)*BOARD_ROWS+x+1);
   }
 }
 
-void game_state::update_king(int pos)
+void game_state::update_ring(uint32_t pos)
 {
-  int x = pos%BOARD_ROWS;
-  int y = pos/BOARD_ROWS;
+  uint32_t x = pos%BOARD_ROWS;
+  uint32_t y = pos/BOARD_ROWS;
 
   for (int i=-2;i<=2;i++)
   {
@@ -189,7 +189,7 @@ void game_state::update_king(int pos)
     {
       if (check((y+i)*BOARD_ROWS+x+j, current_player-1))
       {
-        king[current_player-1].push_back((y+i)*BOARD_ROWS + x + j);
+        rings[current_player-1].push_back((y+i)*BOARD_ROWS+x+j);
       }
     }
   }
@@ -198,12 +198,13 @@ void game_state::update_king(int pos)
 void game_state::apply_move(const move &m)
 {
   board bcp = pieces[current_player-1];
+
   clear_pos(m.end, (current_player ^ 0b11) - 1);
   clear_pos(m.end, current_player-1);
   clear_pos(m.start, current_player-1);
 
   set_pos(m.start, m.end, bcp);
-  update_king(m.end);
+  update_ring(m.end);
 
   if (win_condition((current_player ^ 0b11) - 1))
   {
@@ -242,14 +243,14 @@ void game_state::add_moves(footprint &fp, std::vector<move>& moves)
   board &b = pieces[current_player -1];
   board &bo = pieces[(current_player ^ 0b11) - 1];
 
-  int x = fp.pos%BOARD_ROWS;
-  int y = fp.pos/BOARD_ROWS;
+  uint32_t x = fp.pos%BOARD_ROWS;
+  uint32_t y = fp.pos/BOARD_ROWS;
 
   if (fp.u)
   {
-    int cnt = fp.cnt;
-    int yt = y;
-    int xt = x;
+    uint32_t cnt = fp.cnt;
+    uint32_t yt = y;
+    uint32_t xt = x;
 
     while (cnt-- && ++yt < (BOARD_ROWS-2))
     {
@@ -265,9 +266,9 @@ void game_state::add_moves(footprint &fp, std::vector<move>& moves)
 
   if (fp.d)
   {
-    int cnt = fp.cnt;
-    int yt = y;
-    int xt = x;
+    uint32_t cnt = fp.cnt;
+    uint32_t yt = y;
+    uint32_t xt = x;
 
     while (cnt-- && --yt >1)
     {
@@ -283,9 +284,9 @@ void game_state::add_moves(footprint &fp, std::vector<move>& moves)
 
   if (fp.l)
   {
-    int cnt = fp.cnt;
-    int yt = y;
-    int xt = x;
+    uint32_t cnt = fp.cnt;
+    uint32_t yt = y;
+    uint32_t xt = x;
 
     while (cnt-- && --xt >1)
     {
@@ -301,9 +302,9 @@ void game_state::add_moves(footprint &fp, std::vector<move>& moves)
 
   if (fp.r)
   {
-    int cnt = fp.cnt;
-    int yt = y;
-    int xt = x;
+    uint32_t cnt = fp.cnt;
+    uint32_t yt = y;
+    uint32_t xt = x;
 
     while (cnt-- && ++xt < (BOARD_ROWS-2))
     {
@@ -319,9 +320,9 @@ void game_state::add_moves(footprint &fp, std::vector<move>& moves)
 
   if (fp.ur)
   {
-    int cnt = fp.cnt;
-    int yt = y;
-    int xt = x;
+    uint32_t cnt = fp.cnt;
+    uint32_t yt = y;
+    uint32_t xt = x;
 
     while (cnt-- && ++xt < (BOARD_ROWS-2) && ++yt <(BOARD_ROWS-2))
     {
@@ -339,9 +340,9 @@ void game_state::add_moves(footprint &fp, std::vector<move>& moves)
 
   if (fp.ul)
   {
-    int cnt = fp.cnt;
-    int yt = y;
-    int xt = x;
+    uint32_t cnt = fp.cnt;
+    uint32_t yt = y;
+    uint32_t xt = x;
 
     while (cnt-- && --xt >1 && ++yt <(BOARD_ROWS-2))
     {
@@ -359,9 +360,9 @@ void game_state::add_moves(footprint &fp, std::vector<move>& moves)
 
   if (fp.dr)
   {
-    int cnt = fp.cnt;
-    int yt = y;
-    int xt = x;
+    uint32_t cnt = fp.cnt;
+    uint32_t yt = y;
+    uint32_t xt = x;
 
     while (cnt-- && ++xt < (BOARD_ROWS-2) && --yt >1)
     {
@@ -380,9 +381,9 @@ void game_state::add_moves(footprint &fp, std::vector<move>& moves)
 
   if (fp.dl)
   {
-    int cnt = fp.cnt;
-    int yt = y;
-    int xt = x;
+    uint32_t cnt = fp.cnt;
+    uint32_t yt = y;
+    uint32_t xt = x;
 
     while (cnt-- && --xt >1  && --yt >1)
     {
@@ -401,25 +402,25 @@ void game_state::add_moves(footprint &fp, std::vector<move>& moves)
 
 void game_state::create_moves(std::vector<move>& moves)
 {
-  for(int i=0;i<visited_cnt;i++)
+  for(uint32_t i=0;i<visited_cnt;i++)
   {
     visited[visited_tab[i]] = false;
   }
 
   visited_cnt = 0;
 
-  for (int i=0;i<pieces[current_player-1].s;i++)
+  for (size_t i=0;i<pieces[current_player-1].s;i++)
   {
     uint64_t all = pieces[current_player-1].date[i];
 
     while(all)
     {
-      int mv = msb(all);
+      uint32_t mv = msb(all);
 
-      int pos= (i << 6) + mv;
+      uint32_t pos= (i << 6) + mv;
 
-      int x = pos%BOARD_ROWS;
-      int y = pos/BOARD_ROWS;
+      uint32_t x = pos%BOARD_ROWS;
+      uint32_t y = pos/BOARD_ROWS;
 
       start(pos,moves);
       start(y*BOARD_ROWS+x+1,moves);
@@ -436,7 +437,7 @@ void game_state::create_moves(std::vector<move>& moves)
   }
 }
 
-inline void game_state::start(int pos, std::vector<move> &moves)
+inline void game_state::start(uint32_t pos, std::vector<move> &moves)
 {
   if (visited[pos])
   {
@@ -456,7 +457,7 @@ inline void game_state::start(int pos, std::vector<move> &moves)
   }
 }
 
-bool game_state::check_footprint(int pos)
+bool game_state::check_footprint(uint32_t pos)
 {
   board &b = pieces[(current_player^0b11)-1];
 
@@ -465,14 +466,14 @@ bool game_state::check_footprint(int pos)
     return true;
   }
 
-  int x = pos%BOARD_ROWS;
-  int y = pos/BOARD_ROWS;
+  uint32_t x = pos%BOARD_ROWS;
+  uint32_t y = pos/BOARD_ROWS;
 
   return b.get(y*BOARD_ROWS+x+1) || b.get(y*BOARD_ROWS+x-1) || b.get((y+1)*BOARD_ROWS+x) || b.get((y-1)*BOARD_ROWS+x) ||
     b.get((y+1)*BOARD_ROWS+x+1) || b.get((y+1)*BOARD_ROWS+x-1) || b.get((y-1)*BOARD_ROWS+x+1) || b.get((y-1)*BOARD_ROWS+x-1);
 }
 
-void game_state::create_footprint(int pos, footprint &fp)
+void game_state::create_footprint(uint32_t pos, footprint &fp)
 {
   board &b = pieces[current_player-1];
 
@@ -483,8 +484,8 @@ void game_state::create_footprint(int pos, footprint &fp)
     fp.cnt=BOARD_ROWS;
   }
 
-  int x = pos%BOARD_ROWS;
-  int y = pos/BOARD_ROWS;
+  uint32_t x = pos%BOARD_ROWS;
+  uint32_t y = pos/BOARD_ROWS;
 
   fp.r = b.get(y*BOARD_ROWS+x+1);
   fp.l = b.get(y*BOARD_ROWS+x-1);
