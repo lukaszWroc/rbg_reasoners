@@ -447,12 +447,12 @@ inline void game_state::start(uint32_t pos, std::vector<move> &moves)
   visited[pos] = true;
   visited_tab[visited_cnt++]=pos;
 
-  footprint fp;
-
-  create_footprint(pos,fp);
-
-  if ((fp.u || fp.d || fp.ul || fp.ur || fp.dl || fp.dr || fp.l || fp.r) && !check_footprint(pos))
+  if (!check_footprint(pos))
   {
+    footprint fp;
+
+    create_footprint(pos,fp);
+
     add_moves(fp, moves);
   }
 }
