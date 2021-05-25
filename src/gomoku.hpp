@@ -96,5 +96,14 @@ private:
   std::vector<move> org_moves;
   #endif
   static constexpr std::array<move, BOARD_SIZE> empty = fill_empty();
+  static constexpr std::array<int, BOARD_SIZE> position = []() constexpr
+  {
+    std::array<int, BOARD_SIZE> tmp ={};
+    for (int i=0;i<BOARD_SIZE;i++)
+    {
+      tmp[i] = i;
+    }
+    return tmp;
+  }();
 };
 }

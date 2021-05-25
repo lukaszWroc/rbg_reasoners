@@ -163,9 +163,9 @@ void game_state::apply_move(const move &m)
 
   last_moved = m.mr;
   #ifndef MONOTONIC
-  last_pos   = m.pos;
+  last_pos   = position[m.mr];
   #else
-  not_visited[m.pos] = false;
+  not_visited[position[m.mr]] = false;
   #endif
 
   if (win_condition())
@@ -205,6 +205,7 @@ void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& mo
   #ifndef MONOTONIC
   size_t cnt = org_moves.size()-1;
 
+  position[org_moves[cnt]] = last_pos;
   org_moves[last_pos].mr ^= org_moves[cnt].mr;
   org_moves[cnt].mr      ^= org_moves[last_pos].mr;
   org_moves[last_pos].mr ^= org_moves[cnt].mr;
