@@ -1,5 +1,4 @@
 #include "reasoner.hpp"
-
 namespace reasoner
 {
 
@@ -28,56 +27,13 @@ bool game_state::is_legal([[maybe_unused]] const move& m) const
   return false;
 }
 
-void game_state::fill_mask(uint32_t &mask, uint32_t p)
-{
-  bool in = 0;
-
-  for (int j=0;j<9;j++)
-  {
-    if (mask & ((uint32_t)1 << j))
-    {
-      in = 1;
-    }
-    else if ((p & ((uint32_t)1 << j)) == (uint32_t)0)
-    {
-      in = 0;
-    }
-
-    if (in)
-    {
-      mask |= ((uint32_t)1 << j);
-    }
-  }
-
-  in = 0;
-
-  for(int j=8;j>=0;j--)
-  {
-    if (mask & ((uint32_t)1 << j))
-    {
-      in = 1;
-    }
-    else if ((p & ((uint32_t)1 << j)) == (uint32_t)0)
-    {
-      in = 0;
-    }
-
-    if (in)
-    {
-      mask |= ((uint32_t)1 << j);
-    }
-  }
-}
-
 bool game_state::win_condition_up_down()
 {
-  uint32_t mask = up_down[0];
+  uint16_t mask = up_down[0];
 
   for (int i=1;i<9;i++)
   {
-    mask = (mask & up_down[i]) | (((mask << (uint32_t)1) & (uint32_t)0b111111111) & up_down[i]);
-
-    fill_mask(mask, up_down[i]);
+    mask = mask_to_mask[((uint32_t)mask << 9) + up_down[i]];
   }
 
   return mask;
@@ -86,14 +42,11 @@ bool game_state::win_condition_up_down()
 
 bool game_state::win_condition_left_right()
 {
-  uint32_t mask = left_right[0];
+  uint16_t mask = left_right[0];
 
   for (int i=1;i<9;i++)
   {
-    mask = (mask & left_right[i]) | (((mask << (uint32_t)1) & (uint32_t)0b111111111) & left_right[i]);
-
-    fill_mask(mask, left_right[i]);
-
+    mask = mask_to_mask[((uint32_t)mask << 9) + left_right[i]];
   }
 
   return mask;
@@ -136,24 +89,26 @@ void game_state::apply_move(const move &m)
 
 void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& moves)
 {
+  moves.clear();
+
   if (exit)
   {
-    moves.clear();
     return;
   }
 
-  if (moves.size() == 0 && exit != true)
+  if (last_pos == 100)
   {
-    moves.insert(moves.begin(), std::begin(empty), std::end(empty));
+    moves.insert(moves.begin(), std::begin(empty_array), std::end(empty_array));
     return;
   }
 
-  size_t cnt = moves.size()-1;
+  size_t cnt = empty.size()-1;
 
-  moves[last_pos].mr ^= moves[cnt].mr;
-  moves[cnt].mr      ^= moves[last_pos].mr;
-  moves[last_pos].mr ^= moves[cnt].mr;
+  empty[last_pos].mr ^= empty[cnt].mr;
+  empty[cnt].mr      ^= empty[last_pos].mr;
+  empty[last_pos].mr ^= empty[cnt].mr;
+  empty.pop_back();
 
-  moves.pop_back();
+  moves.insert(moves.begin(), empty.begin(), empty.end());
 }
 }
