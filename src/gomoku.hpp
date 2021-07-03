@@ -9,7 +9,7 @@
 
 #define BOARD_SIZE BOARD_ROWS*BOARD_ROWS
 
-#define MONOTONIC
+#undef MONOTONIC
 
 namespace reasoner
 {
@@ -84,7 +84,7 @@ private:
 
   uint32_t last_moved     = 0;
   #ifndef MONOTONIC
-  uint32_t last_pos       = 0;
+  int last_pos       = 0;
   #endif
 
   bool exit = false;
@@ -94,9 +94,10 @@ private:
   std::vector<bool>not_visited;
   #else
   std::vector<move> org_moves;
+  std::vector<int> position;
   #endif
   static constexpr std::array<move, BOARD_SIZE> empty = fill_empty();
-  static constexpr std::array<int, BOARD_SIZE> position = []() constexpr
+  static constexpr std::array<int, BOARD_SIZE> position_tmp = []() constexpr
   {
     std::array<int, BOARD_SIZE> tmp ={};
     for (int i=0;i<BOARD_SIZE;i++)

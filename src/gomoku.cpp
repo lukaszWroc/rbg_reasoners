@@ -196,6 +196,7 @@ void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& mo
     moves.insert(moves.begin(), std::begin(empty), std::end(empty));
     #ifndef MONOTONIC
     org_moves.insert(org_moves.begin(), std::begin(empty), std::end(empty));
+    position.insert(position.begin(), std::begin(position_tmp), std::end(position_tmp));
     #else
     not_visited.resize(BOARD_SIZE, true);
     #endif
@@ -205,7 +206,7 @@ void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& mo
   #ifndef MONOTONIC
   size_t cnt = org_moves.size()-1;
 
-  position[org_moves[cnt]] = last_pos;
+  position[org_moves[cnt].mr] = last_pos;
   org_moves[last_pos].mr ^= org_moves[cnt].mr;
   org_moves[cnt].mr      ^= org_moves[last_pos].mr;
   org_moves[last_pos].mr ^= org_moves[cnt].mr;
