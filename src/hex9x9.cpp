@@ -31,9 +31,9 @@ bool game_state::win_condition_up_down()
 {
   uint16_t mask = up_down[0];
 
-  for (int i=1;i<9;i++)
+  for (int i=1;i<BOARD_ROWS;i++)
   {
-    mask = mask_to_mask[((uint32_t)mask << 9) + up_down[i]];
+    mask = mask_to_mask[((uint32_t)mask << BOARD_ROWS) + up_down[i]];
   }
 
   return mask;
@@ -44,9 +44,9 @@ bool game_state::win_condition_left_right()
 {
   uint16_t mask = left_right[0];
 
-  for (int i=1;i<9;i++)
+  for (int i=1;i<BOARD_ROWS;i++)
   {
-    mask = mask_to_mask[((uint32_t)mask << 9) + left_right[i]];
+    mask = mask_to_mask[((uint32_t)mask << BOARD_ROWS) + left_right[i]];
   }
 
   return mask;

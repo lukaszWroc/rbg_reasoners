@@ -5,7 +5,7 @@
 
 #define STANDARD
 
-#define BOARD_ROWS 9
+#define BOARD_ROWS 9 // 9 for hex9x9,  11 for hex
 
 #define BOARD_SIZE BOARD_ROWS * BOARD_ROWS
 
@@ -15,7 +15,8 @@ constexpr int NUMBER_OF_PLAYERS   = 3;
 constexpr int MONOTONIC_CLASSES   = 0;
 constexpr int NUMBER_OF_VARIABLES = 2;
 constexpr int NUMBER_OF_PIECES    = 2;
-constexpr uint32_t bitmask = (1 << 9);
+constexpr uint32_t bitmask = (1 << BOARD_ROWS);
+constexpr uint32_t bitor1   = (1 << (BOARD_ROWS + 1)) - 1;
 class resettable_bitarray_stack {};
 
 struct move
@@ -43,7 +44,7 @@ static constexpr int16_t fill_mask(uint32_t mask, uint32_t p)
 {
   bool in = 0;
 
-  for (int j=0;j<9;j++)
+  for (int j=0;j<BOARD_ROWS;j++)
   {
     if (mask & ((uint32_t)1 << j))
     {
@@ -62,7 +63,7 @@ static constexpr int16_t fill_mask(uint32_t mask, uint32_t p)
 
   in = 0;
 
-  for(int j=8;j>=0;j--)
+  for(int j=BOARD_ROWS-1;j>=0;j--)
   {
     if (mask & ((uint32_t)1 << j))
     {
@@ -129,9 +130,9 @@ private:
       for (uint32_t j=0;j<bitmask;j++)
       {
         mask = i;
-        mask = (mask & j) | (((mask << (uint32_t)1) & (uint32_t)0b111111111) & j);
+        mask = (mask & j) | (((mask << (uint32_t)1) & bitor1) & j);
         mask = fill_mask(mask, j);
-        tmp[(i << 9) + j] = mask;
+        tmp[(i << BOARD_ROWS) + j] = mask;
       }
     }
 
