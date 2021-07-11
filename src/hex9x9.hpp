@@ -16,7 +16,7 @@ constexpr int MONOTONIC_CLASSES   = 0;
 constexpr int NUMBER_OF_VARIABLES = 2;
 constexpr int NUMBER_OF_PIECES    = 2;
 constexpr uint32_t bitmask = (1 << BOARD_ROWS);
-constexpr uint32_t bitor1   = (1 << (BOARD_ROWS + 1)) - 1;
+constexpr uint32_t bitor1   = (1 << BOARD_ROWS) - 1;
 class resettable_bitarray_stack {};
 
 struct move
