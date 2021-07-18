@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <vector>
 #include <array>
+#include <iostream>
 #include <set>
 
 #define BOARD_ROWS 8
@@ -114,6 +115,26 @@ struct move
 
 class game_state
 {
+  void print(uint64_t b)
+  {
+    std::cout << "\n\n";
+    for(int i=0;i<8;i++)
+    {
+      for (int j=0;j<8;j++)
+      {
+        if ( ((uint64_t)1 << (i*8+j)) & b)
+        {
+          std::cout << "1";
+        }
+        else
+        std::cout <<"0";
+
+      }
+      std::cout << "\n";
+    }
+        std::cout << "\n\n";
+
+  }
   std::set<full_state> states;
 
   int current_player = 1;
@@ -130,22 +151,22 @@ class game_state
 
   full_state last_full_state;
 
-  uint64_t goldPieces   =  0;
-  uint64_t goldRabbits  =  0;
-  uint64_t goldHorses   =  0;
-  uint64_t goldCats     =  0;
-  uint64_t goldDogs     =  0;
-  uint64_t goldCamel    =  0;
-  uint64_t goldElephant =  0;
+  uint64_t goldPieces   = (uint64_t)0xffff << (6*8);
+  uint64_t goldRabbits  = (uint64_t)0xff << (6*8);
+  uint64_t goldHorses   = (uint64_t)0b10000001 << (7*8);
+  uint64_t goldCats     = (uint64_t)0b01000010 << (7*8);
+  uint64_t goldDogs     = (uint64_t)0b00100100 << (7*8);
+  uint64_t goldCamel    = (uint64_t)0b00010000 << (7*8);
+  uint64_t goldElephant = (uint64_t)0b00001000 << (7*8);
   uint64_t goldEndLine  = (uint64_t)0xff;
 
-  uint64_t silverPieces   = 0;
-  uint64_t silverRabbits  = 0;
-  uint64_t silverHorses   = 0;
-  uint64_t silverCats     = 0;
-  uint64_t silverDogs     = 0;
-  uint64_t silverCamel    = 0;
-  uint64_t silverElephant = 0;
+  uint64_t silverPieces   = (uint64_t)0xffff;
+  uint64_t silverRabbits  = (uint64_t)0xff << 8;
+  uint64_t silverHorses   = (uint64_t)0b10000001;
+  uint64_t silverCats     = (uint64_t)0b01000010;
+  uint64_t silverDogs     = (uint64_t)0b00100100;
+  uint64_t silverCamel    = (uint64_t)0b00010000;
+  uint64_t silverElephant = (uint64_t)0b00001000;
   uint64_t silverEndLine  = (uint64_t)0xff << (7*8);
 
   int elephantStr = 5;
@@ -166,9 +187,14 @@ class game_state
   std::vector<move> silverSetup;
   std::vector<move> goldSetup;
 
-  inline uint64_t msb(const uint64_t p)
+  __attribute__((hot)) inline uint64_t msb(const uint64_t p)
   {
     return (uint64_t)1 << (63 - __builtin_clzl(p));
+  }
+
+  __attribute__((hot)) inline uint32_t getPos(const uint64_t &p)
+  {
+    return 63 - __builtin_clzl(p);
   }
 
   inline void insert(std::vector<move>& moves, uint64_t from1, uint64_t to1 = OUTSIDE_BOARD,
@@ -176,15 +202,12 @@ class game_state
 
   void setup(std::vector<move>& moves);
   void apply_setup(uint32_t m);
-  void makePull(uint64_t pieces, uint64_t from, uint64_t to, std::vector<move>& moves);
   void getMoves(uint64_t pieces, int str, std::vector<move>& moves);
   void addIfStronger(uint64_t pos, int str, uint64_t &res);
   void addIfWeaker(uint64_t pos, int str, uint64_t &res);
 
   void addMoves(uint64_t tmp, uint64_t oponentNeighbour, uint64_t freeSpace,
                   uint64_t mv, std::vector<move>& moves);
-
-  uint64_t getNeighbour(uint64_t pos, uint64_t oponent, int str);
 
   bool frozzen(uint64_t pos, uint64_t my, uint64_t other, int str);
   bool protected1(uint64_t pos, uint64_t my);
@@ -198,7 +221,46 @@ class game_state
   void getSilverRabbitMoves(std::vector<move> &moves);
   void removeTraped(uint32_t player);
 
-  uint64_t getFreeNeighbour(uint64_t pos);
+  __attribute__((hot)) inline uint64_t getFreeNeighbour(const uint64_t &pos);
+  __attribute__((hot)) inline uint64_t getNeighbour(const uint64_t &pos, const uint64_t &oponent, int str);
+
+  static constexpr std::array<uint64_t, 64> neighbour = []()
+  {
+    std::array<uint64_t, 64> tmp = {};
+
+    for (int i=0;i<BOARD_ROWS;i++)
+    {
+
+      for (int j=0;j<BOARD_ROWS;j++)
+      {
+        uint64_t res = 0;
+
+        if ((0 <= i && i < BOARD_ROWS) && (0 <=j-1 && j-1 <BOARD_ROWS))
+        {
+          res |= (uint64_t)1 << (i*BOARD_ROWS + j -1);
+        }
+
+        if ((0 <= i && i < BOARD_ROWS) && (0 <=j+1 && j+1 <BOARD_ROWS))
+        {
+          res |= (uint64_t)1 << (i*BOARD_ROWS + j + 1);
+        }
+
+        if ((0 <= i-1 && i-1 < BOARD_ROWS) && (0 <=j && j <BOARD_ROWS))
+        {
+          res |= (uint64_t)1 << ((i-1)*BOARD_ROWS + j);
+        }
+
+        if ((0 <= i+1 && i+1 < BOARD_ROWS) && (0 <=j && j <BOARD_ROWS))
+        {
+          res |= (uint64_t)1 << ((i+1)*BOARD_ROWS + j);
+        }
+
+        tmp[i*BOARD_ROWS+j] = res;
+      }
+    }
+
+    return tmp;
+  }();
 
   static constexpr std::array<move, 16> goldSetup_init = []()
   {

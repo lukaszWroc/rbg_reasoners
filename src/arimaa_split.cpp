@@ -149,11 +149,11 @@ void game_state::update(uint64_t from, uint64_t to)
 
   (*myPieces) ^= from;
 
-  bool pr = protected1(to, *myPieces);
+  bool pr = protected1(to & traps, *myPieces);
 
   uint64_t newPos = 0;
 
-  if (pr || !(to & traps))
+  if (pr)
   {
     newPos = to;
   }
@@ -227,11 +227,11 @@ board_state game_state::updateCopy(uint64_t from, uint64_t to)
 
   myPieces ^= from;
 
-  bool pr = protected1(to, myPieces);
+  bool pr = protected1(to & traps, myPieces);
 
   uint64_t newPos = 0;
 
-  if (pr || !(to & traps))
+  if (pr)
   {
     newPos = to;
   }
@@ -349,19 +349,19 @@ void game_state::removeTraped(uint32_t player)
 
 void game_state::apply_move(const move &m)
 {
-  if (setup_cnt < 32)
-  {
-    apply_setup(m.mr);
+  // if (setup_cnt < 32)
+  // {
+  //   apply_setup(m.mr);
 
-    setup_cnt++;
-    last_pos = m.pos;
+  //   setup_cnt++;
+  //   last_pos = m.pos;
 
-    if (setup_cnt == 16)
-    {
-      current_player ^= 0b11;
-    }
-    return;
-  }
+  //   if (setup_cnt == 16)
+  //   {
+  //     current_player ^= 0b11;
+  //   }
+  //   return;
+  // }
 
   if (m.mr == PASS)
   {
@@ -452,12 +452,12 @@ void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& mo
 {
   moves.clear();
 
-  if (setup_cnt < 31)
-  {
-    setup(moves);
+  // if (setup_cnt < 31)
+  // {
+  //   setup(moves);
 
-    return;
-  }
+  //   return;
+  // }
 
   if (exit || turn_limit == TURN_LIMIT)
   {
@@ -598,19 +598,6 @@ void game_state::getSilverRabbitMoves(std::vector<move> &moves)
   }
 }
 
-
-void game_state::makePull(uint64_t pieces, uint64_t from, uint64_t to, std::vector<move>& moves)
-{
-  while (pieces)
-  {
-    uint64_t mv = msb(pieces);
-
-    insert(moves, from, to, mv, from);
-
-    pieces ^= mv;
-  }
-}
-
 void game_state::addIfStronger(uint64_t pos, int str, uint64_t &res)
 {
   uint64_t otherElephant;
@@ -739,40 +726,6 @@ void game_state::addIfWeaker(uint64_t pos, int str, uint64_t &res)
   }
 }
 
-uint64_t game_state::getNeighbour(uint64_t pos, uint64_t oponent, int str)
-{
-  uint64_t res = 0;
-  uint64_t tmp = pos << 8;
-
-  if (tmp & oponent)
-  {
-    addIfStronger(tmp, str, res);
-  }
-
-  tmp = pos >> 8;
-
-  if (tmp & oponent)
-  {
-    addIfStronger(tmp, str, res);
-  }
-
-  tmp = (pos & leftBoard) >> 1;
-
-  if (tmp & oponent)
-  {
-    addIfStronger(tmp, str, res);
-  }
-
-  tmp = (pos & rightBoard) << 1;
-
-  if (tmp & oponent)
-  {
-    addIfStronger(tmp, str, res);
-  }
-
-  return res;
-}
-
 bool game_state::frozzen(uint64_t pos, uint64_t my, uint64_t other, int str)
 {
   uint64_t tmp = pos << 8;
@@ -860,68 +813,48 @@ bool game_state::frozzen(uint64_t pos, uint64_t my, uint64_t other, int str)
 
 bool game_state::protected1(uint64_t pos, uint64_t my)
 {
-  uint64_t tmp = pos << 8;
-
-  if (tmp & my)
+  if ((pos << 8) & my)
   {
     return true;
   }
-
-  tmp = pos >> 8;
-
-  if (tmp & my)
+  else if ((pos >> 8) & my)
   {
     return true;
   }
-
-  tmp = (pos & leftBoard) >> 1;
-
-  if (tmp & my)
+  else if ((pos >> 1) & my)
   {
     return true;
   }
-
-  tmp = (pos & rightBoard) << 1;
-
-  if (tmp & my)
+  else if ((pos << 1) & my)
   {
     return true;
   }
+  else if (pos)
+  {
+    return false;
+  }
 
-  return false;
+  return true;
 }
 
-uint64_t game_state::getFreeNeighbour(uint64_t pos)
+uint64_t game_state::getFreeNeighbour(const uint64_t &pos)
 {
-  uint64_t freeSpace = ~(goldPieces | silverPieces);
+  return neighbour[getPos(pos)] & (~(goldPieces | silverPieces));
+}
 
-  uint64_t res =0;
-  uint64_t tmp = pos << 8;
+uint64_t game_state::getNeighbour(const uint64_t &pos, const uint64_t &oponent, int str)
+{
+  uint64_t pieces = neighbour[getPos(pos)] & oponent;
 
-  if (tmp & freeSpace)
+  uint64_t res = 0;
+
+  while (pieces)
   {
-    res |= tmp;
-  }
+    uint64_t mv = msb(pieces);
 
-  tmp = pos >> 8;
+    addIfStronger(mv, str, res);
 
-  if (tmp & freeSpace)
-  {
-    res |= tmp;
-  }
-
-  tmp = (pos & leftBoard) >> 1;
-
-  if (tmp & freeSpace)
-  {
-    res |= tmp;
-  }
-
-  tmp = (pos & rightBoard) << 1;
-
-  if (tmp & freeSpace)
-  {
-    res |= tmp;
+    pieces ^= mv;
   }
 
   return res;
@@ -937,21 +870,29 @@ void game_state::addMoves(uint64_t tmp, uint64_t oponentNeighbour, uint64_t free
 
   if (tmp & oponentNeighbour) // push
   {
-    uint64_t tmpFreeSpace = getFreeNeighbour(tmp);
+    uint64_t pieces = getFreeNeighbour(tmp);
 
-    while (tmpFreeSpace)
+    while (pieces)
     {
-      uint64_t mv1 = msb(tmpFreeSpace);
+      uint64_t mv1 = msb(pieces);
 
       insert(moves, mv, tmp, tmp, mv1);
 
-      tmpFreeSpace ^= mv1;
+      pieces ^= mv1;
     }
   }
-
-  if (tmp & freeSpace) //pull
+  else if (tmp & freeSpace) // pull
   {
-    makePull(oponentNeighbour, mv, tmp, moves);
+    uint64_t pieces = oponentNeighbour;
+
+    while (pieces)
+    {
+      uint64_t mv1 = msb(pieces);
+
+      insert(moves, mv, tmp, mv1, mv);
+
+      pieces ^= mv1;
+    }
   }
 }
 
