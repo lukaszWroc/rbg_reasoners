@@ -456,7 +456,7 @@ void game_state::apply_move(const move &m)
     board_state gold(goldRabbits, goldHorses, goldCats, goldDogs, goldCamel, goldElephant);
     board_state silver(silverRabbits, silverHorses, silverCats, silverDogs, silverCamel, silverElephant);
     last_full_state = full_state(gold, silver);
-    
+
     auto res = states.find(last_full_state);
 
     if (res == states.end())
