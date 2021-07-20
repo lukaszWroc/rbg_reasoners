@@ -494,7 +494,7 @@ void game_state::apply_move(const move &m)
   {
     move_cnt++;
     current_player ^= 0b11;
-    if (current_player == 1)
+    if (current_player == 2)
     {
       update<2>(m.oponent_from, m.oponent_to);
     }
