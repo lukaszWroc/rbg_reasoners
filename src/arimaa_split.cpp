@@ -108,6 +108,10 @@ void game_state::apply_setup(uint32_t m)
   {
     silverRabbits = silverPieces ^ (silverElephant | silverCamel | silverHorses | silverDogs| silverCats);
     setup_cnt = 32;
+    last_silver_state.set(silverRabbits, silverHorses, silverCats, silverDogs, silverCamel, silverElephant);
+    last_gold_state.set(goldRabbits, goldHorses, goldCats, goldDogs, goldCamel, goldElephant);
+    states[std::make_pair(last_gold_state, last_silver_state)] = states_cnt;
+    repetition[states_cnt] = 1;
   }
 }
 
@@ -259,6 +263,86 @@ template <> void game_state::update<2>(uint64_t from, uint64_t to)
   }
 }
 
+void game_state::updateCopy(uint64_t from, uint64_t to, board_state &b)
+{
+  uint64_t myPieces;
+  uint64_t myElephant;
+  uint64_t myCamel;
+  uint64_t myHorses;
+  uint64_t myDogs;
+  uint64_t myCats;
+  uint64_t myRabbits;
+
+  if (current_player == 2)
+  {
+    myPieces   = silverPieces;
+    myElephant = silverElephant;
+    myCamel    = silverCamel;
+    myHorses   = silverHorses;
+    myDogs     = silverDogs;
+    myCats     = silverCats;
+    myRabbits  = silverRabbits;
+  }
+  else
+  {
+    myPieces   = goldPieces;
+    myElephant = goldElephant;
+    myCamel    = goldCamel;
+    myHorses   = goldHorses;
+    myDogs     = goldDogs;
+    myCats     = goldCats;
+    myRabbits  = goldRabbits;
+  }
+
+  myPieces ^= from;
+
+  bool pr = protected1(to & traps, myPieces);
+
+  uint64_t newPos = 0;
+
+  if (pr)
+  {
+    newPos = to;
+  }
+
+  myPieces |= newPos;
+
+  uint64_t pos = from;
+
+  if (myRabbits & pos)
+  {
+    myRabbits ^= pos;
+    myRabbits |= newPos;
+  }
+  else if (myCamel & pos)
+  {
+    myCamel ^= pos;
+    myCamel |= newPos;
+  }
+  else if (myHorses & pos)
+  {
+    myHorses ^= pos;
+    myHorses |= newPos;
+  }
+  else if (myDogs & pos)
+  {
+    myDogs ^= pos;
+    myDogs |= newPos;
+  }
+  else if (myCats & pos)
+  {
+    myCats ^= pos;
+    myCats |= newPos;
+  }
+  else
+  {
+    myElephant ^= pos;
+    myElephant |= newPos;
+  }
+
+  b.set(myRabbits, myHorses, myCats, myDogs, myCamel, myElephant);
+}
+
 board_state game_state::updateCopy(uint64_t from, uint64_t to)
 {
   uint64_t myPieces;
@@ -305,10 +389,10 @@ board_state game_state::updateCopy(uint64_t from, uint64_t to)
 
   uint64_t pos = from;
 
-  if (myElephant & pos)
+  if (myRabbits & pos)
   {
-    myElephant ^= pos;
-    myElephant |= newPos;
+    myRabbits ^= pos;
+    myRabbits |= newPos;
   }
   else if (myCamel & pos)
   {
@@ -332,8 +416,8 @@ board_state game_state::updateCopy(uint64_t from, uint64_t to)
   }
   else
   {
-    myRabbits ^= pos;
-    myRabbits |= newPos;
+    myElephant ^= pos;
+    myElephant |= newPos;
   }
 
   return board_state(myRabbits, myHorses, myCats, myDogs, myCamel, myElephant);
@@ -353,13 +437,9 @@ template<> void game_state::removeTraped<2>()
     {
       silverPieces ^= mv;
 
-      if (silverElephant & mv)
+      if (silverRabbits & mv)
       {
-        silverElephant ^= mv;
-      }
-      else if (silverCamel & mv)
-      {
-        silverCamel ^= mv;
+        silverRabbits ^= mv;
       }
       else if (silverHorses & mv)
       {
@@ -373,9 +453,13 @@ template<> void game_state::removeTraped<2>()
       {
         silverCats ^= mv;
       }
+      else if (silverCamel & mv)
+      {
+        silverCamel ^= mv;
+      }
       else
       {
-        silverRabbits ^= mv;
+        silverElephant ^= mv;
       }
     }
 
@@ -397,9 +481,9 @@ template<> void game_state::removeTraped<1>()
     {
       goldPieces ^= mv;
 
-      if (goldElephant & mv)
+      if (goldRabbits & mv)
       {
-        goldElephant ^= mv;
+        goldRabbits ^= mv;
       }
       else if (goldCamel & mv)
       {
@@ -419,7 +503,7 @@ template<> void game_state::removeTraped<1>()
       }
       else
       {
-        goldRabbits ^= mv;
+        goldElephant ^= mv;
       }
     }
 
@@ -429,39 +513,38 @@ template<> void game_state::removeTraped<1>()
 
 void game_state::apply_move(const move &m)
 {
-  if (setup_cnt < 32)
-  {
-    apply_setup(m.mr);
+  // if (setup_cnt < 32)
+  // {
+  //   apply_setup(m.mr);
 
-    last_pos = m.pos;
+  //   last_pos = m.pos;
 
-    if (setup_cnt == 8)
-    {
-      setup_cnt = 16;
-      current_player ^= 0b11;
-    }
-    else
-    {
-      setup_cnt++;
-    }
+  //   if (setup_cnt == 8)
+  //   {
+  //     setup_cnt = 16;
+  //     current_player ^= 0b11;
+  //   }
+  //   else
+  //   {
+  //     setup_cnt++;
+  //   }
 
-    return;
-  }
+  //   return;
+  // }
 
   if (m.mr == PASS)
   {
     move_cnt = 0;
     current_player ^= 0b11;
 
-    board_state gold(goldRabbits, goldHorses, goldCats, goldDogs, goldCamel, goldElephant);
-    board_state silver(silverRabbits, silverHorses, silverCats, silverDogs, silverCamel, silverElephant);
-    last_full_state = full_state(gold, silver);
+    last_gold_state.set(goldRabbits, goldHorses, goldCats, goldDogs, goldCamel, goldElephant);
+    last_silver_state.set(silverRabbits, silverHorses, silverCats, silverDogs, silverCamel, silverElephant);
 
-    auto res = states.find(last_full_state);
+    auto res = states.find(std::make_pair(last_gold_state, last_silver_state));
 
     if (res == states.end())
     {
-      states[last_full_state] = states_cnt;
+      states[std::make_pair(last_gold_state, last_silver_state)] = states_cnt;
       repetition[states_cnt++] = 1;
     }
     else
@@ -525,14 +608,14 @@ void game_state::apply_move(const move &m)
 
   if (move_cnt == 4)
   {
-    board_state gold(goldRabbits, goldHorses, goldCats, goldDogs, goldCamel, goldElephant);
-    board_state silver(silverRabbits, silverHorses, silverCats, silverDogs, silverCamel, silverElephant);
-    last_full_state = full_state(gold, silver);
-    auto res = states.find(last_full_state);
+    last_gold_state.set(goldRabbits, goldHorses, goldCats, goldDogs, goldCamel, goldElephant);
+    last_silver_state.set(silverRabbits, silverHorses, silverCats, silverDogs, silverCamel, silverElephant);
+
+    auto res = states.find(std::make_pair(last_gold_state, last_silver_state));
 
     if (res == states.end())
     {
-      states[last_full_state] = states_cnt;
+      states[std::make_pair(last_gold_state, last_silver_state)] = states_cnt;
       repetition[states_cnt++] = 1;
     }
     else
@@ -585,12 +668,12 @@ void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& mo
 {
   moves.clear();
 
-  if (setup_cnt < 31)
-  {
-    setup(moves);
+  // if (setup_cnt < 31)
+  // {
+  //   setup(moves);
 
-    return;
-  }
+  //   return;
+  // }
 
   if (exit || turn_limit == TURN_LIMIT)
   {
@@ -621,7 +704,9 @@ void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& mo
     getSilverRabbitMoves(moves);
   }
 
-  if (move_cnt > 0 && stateDifferent())
+  if (move_cnt > 0 &&
+    (last_gold_state.cmp(goldRabbits, goldHorses, goldCats, goldDogs, goldCamel, goldElephant) ||
+    last_silver_state.cmp(silverRabbits, silverHorses, silverCats, silverDogs, silverCamel, silverElephant)))
   {
     moves.emplace_back(PASS);
   }
@@ -637,10 +722,7 @@ void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& mo
 
 bool game_state::stateDifferent()
 {
-  board_state gold(goldRabbits, goldHorses, goldCats, goldDogs, goldCamel, goldElephant);
-  board_state silver(silverRabbits, silverHorses, silverCats, silverDogs, silverCamel, silverElephant);
-
-  return !(last_full_state.gold == gold && last_full_state.silver == silver);
+  return false;
 }
 
 void game_state::getGoldRabbitMoves(std::vector<move> &moves)
@@ -861,7 +943,7 @@ bool game_state::frozzen(uint64_t pos, uint64_t my, uint64_t other, int str)
 {
   uint64_t pieces = neighbour[getPos(pos)];
 
-  bool blocked   = false;
+  bool blocked = false;
 
   while (pieces)
   {
@@ -970,56 +1052,52 @@ void game_state::addMoves(uint64_t tmp, uint64_t oponentNeighbour, uint64_t free
 
 void game_state::insert(std::vector<move>& moves, uint64_t from1, uint64_t to1, uint64_t from2, uint64_t to2)
 {
-  int cnt = 1;
+  if (move_cnt < 2 || (move_cnt < 3 && to2 == OUTSIDE_BOARD))
+  {
+    moves.emplace_back(from1, to1, from2, to2);
+    return;
+  }
 
   if (current_player == 1)
   {
-    board_state b1 = updateCopy(from1, to1);
+    board_state b1(updateCopy(from1, to1));
     board_state b2;
 
     if (from2 != OUTSIDE_BOARD)
     {
-      cnt++;
       current_player ^= 0b11;
-      b2 = updateCopy(from2, to2);
+      updateCopy(from2, to2, b2);
       current_player ^= 0b11;
     }
     else
     {
-      b2 = board_state(silverRabbits, silverHorses, silverCats, silverDogs, silverCamel, silverElephant);
+      b2.set(silverRabbits, silverHorses, silverCats, silverDogs, silverCamel, silverElephant);
     }
 
-    if (!(last_full_state.gold == b1 && last_full_state.silver == b2))
-    {
-      moves.emplace_back(from1, to1, from2, to2);
-    }
-    else if (move_cnt + cnt < 4)
+    if (last_gold_state.cmp(goldRabbits, goldHorses, goldCats, goldDogs, goldCamel, goldElephant) ||
+        last_silver_state.cmp(silverRabbits, silverHorses, silverCats, silverDogs, silverCamel, silverElephant))
     {
       moves.emplace_back(from1, to1, from2, to2);
     }
   }
   else
   {
-    board_state b2 = updateCopy(from1, to1);
+    board_state b2(updateCopy(from1, to1));
     board_state b1;
 
     if (from2 != OUTSIDE_BOARD)
     {
-      cnt++;
       current_player ^= 0b11;
-      b1 = updateCopy(from2, to2);
+      updateCopy(from2, to2, b1);
       current_player ^= 0b11;
     }
     else
     {
-      b1 = board_state(goldRabbits, goldHorses, goldCats, goldDogs, goldCamel, goldElephant);
+      b1.set(goldRabbits, goldHorses, goldCats, goldDogs, goldCamel, goldElephant);
     }
 
-    if (!(last_full_state.gold == b1 && last_full_state.silver == b2))
-    {
-      moves.emplace_back(from1, to1, from2, to2);
-    }
-    else if (move_cnt + cnt < 4)
+    if (last_gold_state.cmp(goldRabbits, goldHorses, goldCats, goldDogs, goldCamel, goldElephant) ||
+        last_silver_state.cmp(silverRabbits, silverHorses, silverCats, silverDogs, silverCamel, silverElephant))
     {
       moves.emplace_back(from1, to1, from2, to2);
     }
