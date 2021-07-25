@@ -513,24 +513,24 @@ template<> void game_state::removeTraped<1>()
 
 void game_state::apply_move(const move &m)
 {
-  // if (setup_cnt < 32)
-  // {
-  //   apply_setup(m.mr);
+  if (setup_cnt < 32)
+  {
+    apply_setup(m.mr);
 
-  //   last_pos = m.pos;
+    last_pos = m.pos;
 
-  //   if (setup_cnt == 8)
-  //   {
-  //     setup_cnt = 16;
-  //     current_player ^= 0b11;
-  //   }
-  //   else
-  //   {
-  //     setup_cnt++;
-  //   }
+    if (setup_cnt == 8)
+    {
+      setup_cnt = 16;
+      current_player ^= 0b11;
+    }
+    else
+    {
+      setup_cnt++;
+    }
 
-  //   return;
-  // }
+    return;
+  }
 
   if (m.mr == PASS)
   {
@@ -668,12 +668,12 @@ void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& mo
 {
   moves.clear();
 
-  // if (setup_cnt < 31)
-  // {
-  //   setup(moves);
+  if (setup_cnt < 31)
+  {
+    setup(moves);
 
-  //   return;
-  // }
+    return;
+  }
 
   if (exit || turn_limit == TURN_LIMIT)
   {
@@ -1074,8 +1074,8 @@ void game_state::insert(std::vector<move>& moves, uint64_t from1, uint64_t to1, 
       b2.set(silverRabbits, silverHorses, silverCats, silverDogs, silverCamel, silverElephant);
     }
 
-    if (last_gold_state.cmp(goldRabbits, goldHorses, goldCats, goldDogs, goldCamel, goldElephant) ||
-        last_silver_state.cmp(silverRabbits, silverHorses, silverCats, silverDogs, silverCamel, silverElephant))
+    if (last_gold_state.cmp(b1.rabbits, b1.horses, b1.cats, b1.dogs, b1.camel, b1.elephant) ||
+        last_silver_state.cmp(b2.rabbits, b2.horses, b2.cats, b2.dogs, b2.camel, b2.elephant))
     {
       moves.emplace_back(from1, to1, from2, to2);
     }
@@ -1096,8 +1096,8 @@ void game_state::insert(std::vector<move>& moves, uint64_t from1, uint64_t to1, 
       b1.set(goldRabbits, goldHorses, goldCats, goldDogs, goldCamel, goldElephant);
     }
 
-    if (last_gold_state.cmp(goldRabbits, goldHorses, goldCats, goldDogs, goldCamel, goldElephant) ||
-        last_silver_state.cmp(silverRabbits, silverHorses, silverCats, silverDogs, silverCamel, silverElephant))
+    if (last_gold_state.cmp(b1.rabbits, b1.horses, b1.cats, b1.dogs, b1.camel, b1.elephant) ||
+        last_silver_state.cmp(b2.rabbits, b2.horses, b2.cats, b2.dogs, b2.camel, b2.elephant))
     {
       moves.emplace_back(from1, to1, from2, to2);
     }
