@@ -1,5 +1,5 @@
 #include "reasoner.hpp"
-#include <iostream>
+
 namespace reasoner
 {
 
@@ -165,7 +165,7 @@ void game_state::apply_move(const move &m)
   #ifndef MONOTONIC
   last_pos   = position[m.mr];
   #else
-  not_visited[position[m.mr]] = false;
+  not_visited[m.mr] = false;
   #endif
 
   if (win_condition())
@@ -181,12 +181,12 @@ void game_state::apply_move(const move &m)
 void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& moves)
 {
   moves.clear();
-  // #ifndef MONOTONIC
+
   if (exit)
   {
     return;
   }
-  // #endif
+
   #ifndef MONOTONIC
   if (org_moves.size() == 0)
   #else

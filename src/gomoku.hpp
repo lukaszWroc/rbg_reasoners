@@ -9,7 +9,7 @@
 
 #define BOARD_SIZE BOARD_ROWS*BOARD_ROWS
 
-#undef MONOTONIC
+#define MONOTONIC
 
 namespace reasoner
 {
@@ -50,7 +50,7 @@ template<uint32_t N> struct subset
 {
   uint64_t date[N] = {0};
 
-   __attribute__((hot)) inline uint64_t get(uint32_t x)
+  __attribute__((hot)) inline uint64_t get(uint32_t x)
   {
     return (date[x >> 6] & ((uint64_t)1 << (x & bit_mask)));
   }
@@ -75,7 +75,6 @@ public:
 
   bool apply_any_move(resettable_bitarray_stack&);
   bool is_legal(const move& m) const;
-  bool win_condition();
 
 private:
   board pieces[2] = {0};
@@ -96,6 +95,9 @@ private:
   std::vector<move> org_moves;
   std::vector<int> position;
   #endif
+
+  bool win_condition();
+
   static constexpr std::array<move, BOARD_SIZE> empty = fill_empty();
   static constexpr std::array<int, BOARD_SIZE> position_tmp = []() constexpr
   {
