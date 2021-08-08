@@ -114,7 +114,6 @@ constexpr board empty_tmp = []()
     return tmp;
   }();
 
-
 constexpr std::array<uint32_t, PIECE_NUMBER> pieces_tmp = []()
   {
     std::array<uint32_t, PIECE_NUMBER> tmp = {};

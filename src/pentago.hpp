@@ -3,8 +3,6 @@
 #include <cstdint>
 #include <vector>
 
-#undef STANDARD
-
 #define BOARD_ROWS 6
 
 #define BOARD_SIZE BOARD_ROWS * BOARD_ROWS

@@ -4,12 +4,6 @@
 #include <vector>
 
 #define BOARD_ROWS 10
-
-#if BOARD_ROWS * BOARD_ROWS > 128
-  #undef BOARD_ROWS
-  #define BOARD_ROWS 10
-#endif
-
 #define BOARD_SIZE BOARD_ROWS*BOARD_ROWS
 
 namespace reasoner
@@ -21,13 +15,7 @@ constexpr int NUMBER_OF_PIECES    = 2;
 
 class resettable_bitarray_stack {};
 
-#if BOARD_ROWS * BOARD_ROWS > 64
-  typedef __int128_t board;
-#elif BOARD_ROWS * BOARD_ROWS > 32
-  typedef uint64_t board;
-#elif BOARD_ROWS * BOARD_ROWS > 16
-  typedef uint32_t board;
-#endif
+typedef __int128_t board;
 
 struct move
 {
@@ -56,10 +44,8 @@ private:
   void get_moves(uint32_t piece, uint32_t idx, std::vector<move>& moves);
   void get_moves(uint32_t y, uint32_t x, uint32_t idx, uint32_t x1, uint32_t y1, std::vector<move>& moves);
 
-  /*** inicializajca wzgledem rozmiaru ********/
   board empty = ((board)4831838240 << 64) +  (board)1152922055436402760;
   uint32_t pieces[2][4] = {{3, 6, 30, 39}, {60, 69, 93, 96}};
-  /******************************************/
 
   uint32_t array_cnt      = 0;
   uint32_t current_player = 1;
