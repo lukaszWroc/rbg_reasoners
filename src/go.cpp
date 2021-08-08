@@ -198,7 +198,6 @@ void game_state::get_points()
   variables[1] = score(blackBoard);
 }
 
-
 void game_state::prepare(std::vector<move>& moves, board &my, board& other)
 {
   board free;
@@ -321,6 +320,7 @@ int game_state::score(board &cb)
   for (int i=0;i<BOARD_ROWS;i++)
   {
     uint32_t pos = i*BOARD_ROWS;
+
     if (!empty.get(pos))
     {
       empty.set(pos);
@@ -331,6 +331,7 @@ int game_state::score(board &cb)
   for (int i=0;i<BOARD_ROWS;i++)
   {
     uint32_t pos = i*BOARD_ROWS+BOARD_ROWS-1;
+
     if (!empty.get(pos))
     {
       empty.set(pos);
@@ -356,7 +357,7 @@ void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& mo
 
   if ((passed[1] && passed[2]) || turn_limit == TURN_LIMIT)
   {
-    get_points();
+    // get_points();
     exit = true;
     return;
   }

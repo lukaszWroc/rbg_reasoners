@@ -10,7 +10,7 @@ namespace reasoner
 constexpr int BOARD_SIZE = BOARD_ROWS * BOARD_ROWS;
 constexpr int BLOCK      = BOARD_SIZE + 100;
 constexpr int PASS       = BOARD_SIZE + 1;
-constexpr int TURN_LIMIT =  (BOARD_SIZE * 2) + 1;
+constexpr int TURN_LIMIT = (BOARD_SIZE * 2) - 1;
 
 constexpr int NUMBER_OF_PLAYERS   = 3;
 constexpr int MONOTONIC_CLASSES   = 0;
@@ -33,7 +33,7 @@ template<uint32_t X> struct subset
   uint64_t date[X] = {0};
   int N = X;
 
-   __attribute__((hot)) inline uint64_t get(uint32_t x)
+  __attribute__((hot)) inline uint64_t get(uint32_t x)
   {
     return (date[x >> 6] & ((uint64_t)1 << (x & bit_mask)));
   }
