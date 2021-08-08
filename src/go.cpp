@@ -373,7 +373,14 @@ void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& mo
     prepare(moves, blackBoard, whiteBoard);
   }
 
+  #ifdef NO_PASS
+  if (moves.size() == 0)
+  {
+    moves.push_back(PASS);
+  }
+  #else
   moves.push_back(PASS);
+  #endif
 }
 
 

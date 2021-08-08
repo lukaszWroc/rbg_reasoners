@@ -5,12 +5,14 @@
 
 #define BOARD_ROWS 19
 
+#undef NO_PASS
+
 namespace reasoner
 {
 constexpr int BOARD_SIZE = BOARD_ROWS * BOARD_ROWS;
 constexpr int BLOCK      = BOARD_SIZE + 100;
 constexpr int PASS       = BOARD_SIZE + 1;
-constexpr int TURN_LIMIT = (BOARD_SIZE * 2) - 1;
+constexpr int TURN_LIMIT = (BOARD_SIZE * 2);
 
 constexpr int NUMBER_OF_PLAYERS   = 3;
 constexpr int MONOTONIC_CLASSES   = 0;
