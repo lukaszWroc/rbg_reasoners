@@ -19,12 +19,26 @@ bool game_state::apply_any_move(resettable_bitarray_stack&)
 
 int game_state::get_monotonicity_class(void)
 {
-  return -1;
+  if (exit)
+  {
+    return -1;
+  }
+
+  return 0;
 }
 
 bool game_state::is_legal([[maybe_unused]] const move& m) const
 {
-  return false;
+  #ifdef MONOTONIC
+  uint32_t x = m.mr%BOARD_ROWS;
+  uint32_t y = m.mr/BOARD_ROWS;
+
+  return !(left_right[x] & ((uint32_t)1 << (uint32_t)y)) &&
+    !(up_down[y] & ((uint32_t)1 << (uint32_t)x)) && !exit;
+
+  #else
+  return -1;
+  #endif
 }
 
 bool game_state::win_condition_up_down()
@@ -38,7 +52,6 @@ bool game_state::win_condition_up_down()
 
   return mask;
 }
-
 
 bool game_state::win_condition_left_right()
 {
@@ -82,7 +95,9 @@ void game_state::apply_move(const move &m)
     }
   }
 
+  #ifndef MONOTONIC
   last_pos = m.pos;
+  #endif
 
   current_player ^= 0b11;
 }
@@ -102,6 +117,7 @@ void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& mo
     return;
   }
 
+  #ifndef MONOTONIC
   size_t cnt = empty.size()-1;
 
   empty[last_pos].mr ^= empty[cnt].mr;
@@ -110,5 +126,6 @@ void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& mo
   empty.pop_back();
 
   moves.insert(moves.begin(), empty.begin(), empty.end());
+  #endif
 }
 }
