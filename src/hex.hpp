@@ -5,7 +5,7 @@
 
 #define MONOTONIC
 
-#define BOARD_ROWS 9
+#define BOARD_ROWS 11
 #define BOARD_SIZE BOARD_ROWS * BOARD_ROWS
 
 namespace reasoner
