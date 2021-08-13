@@ -66,7 +66,7 @@ public:
   bool is_legal(const move& m) const;
 
   game_state() : leader(leader_init), liberty(liberty_init), 
-    liberty_board(libert_board_init), neighbors(neighbors_init), range(range_init)
+    taken_board(libert_board_init), range(range_init)
   {}
 
 private:
@@ -77,8 +77,8 @@ private:
 
   std::array<uint32_t, BOARD_SIZE> leader;
   std::array<uint32_t, BOARD_SIZE> liberty;
+  std::array<board, BOARD_SIZE> taken_board;
   std::array<board, BOARD_SIZE> liberty_board;
-  std::array<uint32_t, 4*BOARD_SIZE> neighbors;
   std::array<uint32_t, BOARD_SIZE> range;
 
   board blackBoard;
@@ -88,6 +88,14 @@ private:
   bool passed[3] = {false, false, false};
 
   uint32_t fix_liberty(board &b);
+
+  void clear(board &b)
+  {
+    for (int i=0;i<b.N;i++)
+    {
+      b.date[i] = 0;
+    }
+  }
 
   inline uint32_t count_pieces(board &b);
   inline void get_points();
@@ -111,6 +119,7 @@ private:
     for(int i=0;i<right.N;i++)
     {
       right.date[i] |= left.date[i];
+      left.date[i] = 0;
     }
   }
 
@@ -121,7 +130,7 @@ private:
 
   inline uint32_t getPos(uint64_t mv, int i)
   {
-    return i * 64 + (63 - __builtin_clzl(mv));
+    return (i << 6) + (63 - __builtin_clzl(mv));
   }
 
   inline uint32_t find(uint32_t a)
@@ -137,7 +146,7 @@ private:
     return (uint64_t)1 << (63 - __builtin_clzl(p));
   }
 
-  static constexpr std::array<uint32_t, BOARD_SIZE*4> neighbors_init = []()
+  static constexpr std::array<uint32_t, BOARD_SIZE*4> neighbors = []()
   {
     std::array<uint32_t, BOARD_SIZE*4> tmp = {};
 

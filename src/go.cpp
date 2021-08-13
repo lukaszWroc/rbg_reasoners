@@ -82,7 +82,7 @@ uint32_t game_state::fix_liberty(board &tmp)
 
 void game_state::delete1(uint32_t node)
 {
-  board b = liberty_board[find(node)];
+  board &b = taken_board[node];
 
   board *my, *other;
 
@@ -97,9 +97,11 @@ void game_state::delete1(uint32_t node)
     my    = &whiteBoard;
   }
 
+  board fixed;
+
   for (int i=0;i<b.N;i++)
   {
-    uint64_t allMoves = b.date[i];
+    uint64_t &allMoves = b.date[i];
 
     while (allMoves)
     {
@@ -109,26 +111,10 @@ void game_state::delete1(uint32_t node)
 
       other -> unset(pos);
 
-      liberty_board[pos] = libert_board_init[pos];
-
-      leader[pos]    = pos;
-      range[pos] = 1;
+      leader[pos] = pos;
+      range[pos]  = 1;
 
       allMoves ^= mv;
-    }
-  }
-
-  board fixed;
-
-  for (int i=0;i<b.N;i++)
-  {
-    uint64_t allMoves = b.date[i];
-
-    while (allMoves)
-    {
-      uint64_t mv = msb(allMoves);
-
-      uint32_t pos(getPos(mv, i));
 
       pos = (pos << 2);
 
@@ -141,17 +127,28 @@ void game_state::delete1(uint32_t node)
           break;
         }
 
-        if (my -> get(tmpPos) && !fixed.get(find(tmpPos)))
+        if (my -> get(tmpPos))
         {
-          liberty[find(tmpPos)] = fix_liberty(liberty_board[find(tmpPos)]);
-
+          liberty_board[find(tmpPos)].set(pos >> 2);
           fixed.set(find(tmpPos));
         }
       }
+    }
+  }
 
+  for (int i=0;i<fixed.N;i++)
+  {
+    uint64_t &allMoves = fixed.date[i];
+
+    while (allMoves)
+    {
+      uint64_t mv = msb(allMoves);
+      liberty[getPos(mv, i)] = count_pieces(liberty_board[getPos(mv, i)]);
       allMoves ^= mv;
     }
   }
+
+  clear(liberty_board[node]);
 }
 
 uint32_t game_state::count_pieces(board &b)
@@ -187,7 +184,7 @@ void game_state::apply_move(const move &m)
     update(blackBoard, whiteBoard, m);
   }
 
-  liberty[find(m.mr)] = fix_liberty(liberty_board[find(m.mr)]);
+  liberty[find(m.mr)] = count_pieces(liberty_board[find(m.mr)]);
 
   current_player ^= 0b11;
 }
@@ -202,7 +199,7 @@ void game_state::prepare(std::vector<move>& moves, board &my, board& other)
 {
   board free;
 
-  getFree(my,other, free);
+  getFree(my, other, free);
 
   for (int i=0;i<free.N;i++)
   {
@@ -213,34 +210,34 @@ void game_state::prepare(std::vector<move>& moves, board &my, board& other)
       uint64_t mv = msb(allMoves);
 
       uint32_t pos = getPos(mv, i);
+
       for (int j=0;j<4;j++)
       {
         uint32_t tmp = neighbors[(pos << 2) + j];
 
-        if (tmp != BLOCK)
+        if (tmp == BLOCK)
         {
-          if (free.get(tmp))
+          break;
+        }
+
+        if (free.get(tmp))
+        {
+          moves.emplace_back(pos);
+          break;
+        }
+
+        if (other.get(tmp) && liberty[find(tmp)] == 1)
+        {
+          moves.emplace_back(pos);
+          break;
+        }
+
+        if (my.get(tmp))
+        {
+          if (liberty[find(tmp)] > 1)
           {
-            moves.push_back(pos);
+            moves.emplace_back(pos);
             break;
-          }
-
-          if (other.get(tmp) && liberty[find(tmp)] == 1)
-          {
-            moves.push_back(pos);
-            break;
-          }
-
-          if (my.get(tmp))
-          {
-            board b = liberty_board[find(tmp)];
-
-            if (fix_liberty(b) > 1)
-            {
-              move m(pos);
-              moves.push_back(m);
-              break;
-            }
           }
         }
       }
@@ -252,98 +249,16 @@ void game_state::prepare(std::vector<move>& moves, board &my, board& other)
 
 void game_state::dfs(int i, int j, board &b, board &cb)
 {
-  if ((0 <= i && i < BOARD_ROWS) && (0 <=j-1 && j-1 <BOARD_ROWS))
-  {
-    if (!b.get(i*BOARD_ROWS+j-1) && !cb.get(i*BOARD_ROWS+j-1))
-    {
-      b.set(i*BOARD_ROWS+j-1);
-      dfs(i,j-1,b,cb);
-    }
-  }
-
-  if ((0 <= i && i < BOARD_ROWS) && (0 <=j+1 && j+1 <BOARD_ROWS))
-  {
-    if (!b.get(i*BOARD_ROWS+j+1) && !cb.get(i*BOARD_ROWS+j+1))
-    {
-      b.set(i*BOARD_ROWS+j+1);
-      dfs(i,j+1,b,cb);
-    }
-  }
-
-  if ((0 <= i-1 && i-1 < BOARD_ROWS) && (0 <=j && j <BOARD_ROWS))
-  {
-    if (!b.get((i-1)*BOARD_ROWS+j) && !cb.get((i-1)*BOARD_ROWS+j))
-    {
-      b.set((i-1)*BOARD_ROWS+j);
-      dfs(i-1,j,b,cb);
-    }
-  }
-
-  if ((0 <= i+1 && i+1 < BOARD_ROWS) && (0 <=j && j <BOARD_ROWS))
-  {
-    if (!b.get((i+1)*BOARD_ROWS+j) && !cb.get((i+1)*BOARD_ROWS+j))
-    {
-      b.set((i+1)*BOARD_ROWS+j);
-      dfs(i+1,j,b,cb);
-    }
-  }
+  (void)cb;
+  (void)b;
+  (void)j;
+  (void)i;
 }
 
 int game_state::score(board &cb)
 {
-  board &b = cb;
-  board empty;
-  board nb;
-
-  getFree(b, empty, nb);
-
-  for (int i=0;i<BOARD_ROWS;i++)
-  {
-    uint32_t pos = i;
-    if (!empty.get(pos))
-    {
-      empty.set(pos);
-      dfs(0, i, empty, cb);
-    }
-  }
-
-  for (int i=0;i<BOARD_ROWS;i++)
-  {
-    uint32_t pos = ((BOARD_ROWS-1) * BOARD_ROWS) + i;
-    if (!empty.get(pos))
-    {
-      empty.set(pos);
-      dfs((BOARD_ROWS-1), i, empty, cb);
-    }
-  }
-
-  for (int i=0;i<BOARD_ROWS;i++)
-  {
-    uint32_t pos = i*BOARD_ROWS;
-
-    if (!empty.get(pos))
-    {
-      empty.set(pos);
-      dfs(i, 0, empty, cb);
-    }
-  }
-
-  for (int i=0;i<BOARD_ROWS;i++)
-  {
-    uint32_t pos = i*BOARD_ROWS+BOARD_ROWS-1;
-
-    if (!empty.get(pos))
-    {
-      empty.set(pos);
-      dfs(i, BOARD_ROWS-1, empty, cb);
-    }
-  }
-
-  int numberOfPieces           = count_pieces(cb);
-  int numberOfOutterAreaPieces = count_pieces(empty);
-  int numberOfInnerAreaPieces  = BOARD_SIZE - numberOfPieces - numberOfOutterAreaPieces;
-
-  return numberOfPieces + numberOfInnerAreaPieces;
+  (void)cb;
+  return 0;
 }
 
 void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& moves)
@@ -376,10 +291,10 @@ void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& mo
   #ifdef NO_PASS
   if (moves.size() == 0)
   {
-    moves.push_back(PASS);
+    moves.emplace_back(PASS);
   }
   #else
-  moves.push_back(PASS);
+  moves.emplace_back(PASS);
   #endif
 }
 
@@ -391,7 +306,11 @@ void game_state::update(board &my, board &other, const move &m)
   uint32_t tmp[4];
   size_t cnt = 0;
 
+  uint32_t deleteTmp[4];
+  size_t cntDelete = 0;
+
   board parents;
+  board notTaken;
 
   for (int i=0;i<4;i++)
   {
@@ -402,18 +321,19 @@ void game_state::update(board &my, board &other, const move &m)
       break;
     }
 
-    uint32_t fPos = find(pos);
-
     if (other.get(pos))
     {
+      uint32_t fPos = find(pos);
+
       if (!parents.get(fPos))
       {
+        liberty_board[fPos].unset(m.mr);
         liberty[fPos]--;
         parents.set(fPos);
 
         if (liberty[fPos] == 0)
         {
-          delete1(fPos);
+          deleteTmp[cntDelete++] = fPos;
         }
       }
     }
@@ -421,7 +341,13 @@ void game_state::update(board &my, board &other, const move &m)
     {
       tmp[cnt++] = pos;
     }
+    else
+    {
+      notTaken.set(pos);
+    }
   }
+
+  liberty_board[m.mr] = notTaken;
 
   if (cnt > 0)
   {
@@ -441,18 +367,27 @@ void game_state::update(board &my, board &other, const move &m)
         }
 
         merge1(liberty_board[parent], liberty_board[pp]);
+        merge1(taken_board[parent], taken_board[pp]);
         union1(pp, parent);
       }
     }
 
-    merge1(liberty_board[parent], m.mr);
+    merge1(liberty_board[parent], liberty_board[m.mr]);
+    merge1(taken_board[parent], m.mr);
     union1(m.mr, parent);
+
+    liberty_board[parent].unset(m.mr);
   }
   else
   {
     board tmp;
     tmp.set(m.mr);
-    liberty_board[m.mr] = tmp;
+    taken_board[m.mr] = tmp;
+  }
+
+  for (size_t i=0;i<cntDelete;i++)
+  {
+    delete1(find(deleteTmp[i]));
   }
 }
 }
