@@ -65,8 +65,7 @@ public:
   bool apply_any_move(resettable_bitarray_stack&);
   bool is_legal(const move& m) const;
 
-  game_state() : leader(leader_init), liberty(liberty_init), 
-    taken_board(libert_board_init), range(range_init)
+  game_state() : leader(leader_init), liberty(liberty_init), range(range_init)
   {}
 
 private:
@@ -77,25 +76,15 @@ private:
 
   std::array<uint32_t, BOARD_SIZE> leader;
   std::array<uint32_t, BOARD_SIZE> liberty;
+  std::array<uint32_t, BOARD_SIZE> range;
   std::array<board, BOARD_SIZE> taken_board;
   std::array<board, BOARD_SIZE> liberty_board;
-  std::array<uint32_t, BOARD_SIZE> range;
 
   board blackBoard;
   board whiteBoard;
 
   int turn_limit = 0;
   bool passed[3] = {false, false, false};
-
-  uint32_t fix_liberty(board &b);
-
-  void clear(board &b)
-  {
-    for (int i=0;i<b.N;i++)
-    {
-      b.date[i] = 0;
-    }
-  }
 
   inline uint32_t count_pieces(board &b);
   inline void get_points();
@@ -128,7 +117,7 @@ private:
     right.set(pos);
   }
 
-  inline uint32_t getPos(uint64_t mv, int i)
+  inline uint32_t getPos(uint64_t &mv, int i)
   {
     return (i << 6) + (63 - __builtin_clzl(mv));
   }
@@ -141,7 +130,7 @@ private:
     return leader[a];
   }
 
-  inline uint64_t msb(const uint64_t p)
+  inline uint64_t msb(const uint64_t &p)
   {
     return (uint64_t)1 << (63 - __builtin_clzl(p));
   }
@@ -232,20 +221,6 @@ private:
     {
       tmp[i]=1;
     }
-    return tmp;
-  }();
-
-  static constexpr std::array<board, BOARD_SIZE> libert_board_init = []()
-  {
-    std::array<board, BOARD_SIZE> tmp = {};
-
-    for (uint32_t i=0;i<BOARD_SIZE;i++)
-    {
-      board b;
-      b.set(i);
-      tmp[i] = b;
-    }
-
     return tmp;
   }();
 

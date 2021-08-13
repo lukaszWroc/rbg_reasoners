@@ -38,48 +38,6 @@ void game_state::getFree(board &right, board &left, board &tmp)
   tmp.date[BOARD_SIZE >> 6] &= (((uint64_t)1 << (BOARD_SIZE & bit_mask)) - 1);
 }
 
-uint32_t game_state::fix_liberty(board &tmp)
-{
-  board free;
-
-  getFree(whiteBoard, blackBoard, free);
-
-  board freeTmp;
-
-  for (int i=0;i<tmp.N;i++)
-  {
-    uint64_t allMoves = tmp.date[i];
-
-    while (allMoves)
-    {
-      uint64_t mv = msb(allMoves);
-
-      uint32_t pos(getPos(mv, i));
-
-      pos = (pos << 2);
-
-      for (int j=0;j<4;j++)
-      {
-        uint32_t tmpPos = neighbors[pos + j];
-
-        if (tmpPos == BLOCK)
-        {
-          break;
-        }
-
-        if (free.get(tmpPos))
-        {
-          freeTmp.set(tmpPos);
-        }
-      }
-
-      allMoves ^= mv;
-    }
-  }
-
-  return count_pieces(freeTmp);
-}
-
 void game_state::delete1(uint32_t node)
 {
   board &b = taken_board[node];
@@ -147,8 +105,6 @@ void game_state::delete1(uint32_t node)
       allMoves ^= mv;
     }
   }
-
-  clear(liberty_board[node]);
 }
 
 uint32_t game_state::count_pieces(board &b)
@@ -380,9 +336,7 @@ void game_state::update(board &my, board &other, const move &m)
   }
   else
   {
-    board tmp;
-    tmp.set(m.mr);
-    taken_board[m.mr] = tmp;
+    taken_board[m.mr].set(m.mr);
   }
 
   for (size_t i=0;i<cntDelete;i++)
