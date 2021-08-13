@@ -101,7 +101,7 @@ void game_state::apply_move(const move &m)
 
     return;
   }
-  
+
   rotate_all(tab1[m.pos], tab2[m.pos]);
 
   if (rotation_win())

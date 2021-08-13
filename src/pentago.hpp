@@ -97,14 +97,9 @@ private:
 
   int diff[4] {0,3,18,21};
 
-  bool piece_move = true;
-  bool exit       = false;
+  bool exit = false;
 
   uint32_t current_player = 1;
-
-  uint32_t index_pos[4][9] =
-    {{0,1,2,6,7,8,12,13,14}, {3,4,5,9,10,11,15,16,17},
-    {18,19,20,24,25,26,30,31,32}, {21,22,23,27,28,29,33,34,35}};
 
   uint32_t variables[NUMBER_OF_VARIABLES] = {50, 50};
 

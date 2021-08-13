@@ -55,7 +55,7 @@ bool game_state::win_condition(uint32_t pl)
 {
   for (int i=0;i<32;i++)
   {
-    if ((pieces[pl] & win_arr[i]) == win_arr[i])
+    if (__builtin_popcountll(pieces[pl] & win_arr[i]) >= 5)
     {
       return true;
     }
@@ -91,25 +91,34 @@ void game_state::rotate_all(uint32_t pos, uint32_t type)
 
 void game_state::apply_move(const move &m)
 {
-  pieces[current_player - 1] |= (uint64_t)1 << m.mr;
-
-  if (win_condition(current_player-1))
+  if (piece_move)
   {
-    variables[current_player - 1] = 100;
-    variables[(current_player ^ 0b11) - 1] = 0;
-    exit = true;
+    pieces[current_player - 1] |= (uint64_t)1 << m.mr;
 
-    return;
+    if (win_condition(current_player-1))
+    {
+      variables[current_player - 1] = 100;
+      variables[(current_player ^ 0b11) - 1] = 0;
+      exit = true;
+
+      return;
+    }
+
+    piece_move = false;
   }
-  
-  rotate_all(tab1[m.pos], tab2[m.pos]);
-
-  if (rotation_win())
+  else
   {
-    return;
-  }
+    rotate_all(m.mr, m.pos);
 
-  current_player ^= 0b11;
+    if (rotation_win())
+    {
+      return;
+    }
+
+    piece_move = true;
+
+    current_player ^= 0b11;
+  }
 }
 
 void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& moves)
@@ -121,18 +130,22 @@ void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& mo
     return;
   }
 
-  board allMoves = (~(pieces[0] | pieces[1])) & 0b111111111111111111111111111111111111;
-
-  while (allMoves)
+  if (piece_move)
   {
-    uint32_t mv = msb(allMoves);
+    board allMoves = (~(pieces[0] | pieces[1])) & 0b111111111111111111111111111111111111;
 
-    for(int i=0;i<8;i++)
+    while (allMoves)
     {
-      moves.emplace_back(mv, i);
-    }
+      uint32_t mv = msb(allMoves);
 
-    allMoves ^= (uint64_t)1 << mv;
+      moves.emplace_back(mv);
+
+      allMoves ^= (uint64_t)1 << mv;
+    }
+  }
+  else
+  {
+    moves.insert(moves.begin(), std::begin(rotates_vec), std::end(rotates_vec));
   }
 }
 }
