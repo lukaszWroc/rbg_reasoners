@@ -15,7 +15,7 @@ constexpr int MONOTONIC_CLASSES   = 1;
 #else
 constexpr int MONOTONIC_CLASSES   = 0;
 #endif
-constexpr int NUMBER_OF_VARIABLES = 2;
+constexpr int NUMBER_OF_VARIABLES = 3;
 constexpr int NUMBER_OF_PIECES    = 2;
 
 class resettable_bitarray_stack {};
@@ -26,16 +26,8 @@ struct move
 {
   move_representation mr;
 
-  #ifndef MONOTONIC
-  move_representation pos;
-  #endif
-
   move(void) = default;
-  #ifdef MONOTONIC
   constexpr move(const move_representation& mv) : mr(mv) {};
-  #else
-  constexpr move(const move_representation& mv, const move_representation& _pos) : mr(mv), pos(_pos) {};
-  #endif
   bool operator==(const move& rhs) const;
 };
 
@@ -43,15 +35,11 @@ class game_state
 {
   int current_player = 1;
 
-  static constexpr int not_started =  1 << (BOARD_SIZE + 1);
   int exit = 0;
-  int last_pos = not_started;
 
-  int variables[NUMBER_OF_VARIABLES] = {50, 50};
+  int variables[NUMBER_OF_VARIABLES] = {0, 50, 50};
 
-  std::vector<move> empty_vec;
-
-  uint32_t pieces[2] = {0, 0};
+  uint32_t pieces[3] = {0, 0, 0};
 
   static constexpr std::array<bool, (1 << BOARD_SIZE)> win_arr = []()
   {
@@ -72,17 +60,50 @@ class game_state
     return result;
   }();
 
-  static constexpr std::array<move, BOARD_SIZE> empty_arr = []()
+  static constexpr std::array<move, (1 << BOARD_SIZE) * BOARD_SIZE> all_moves = []()
   {
-    std::array<move, BOARD_SIZE> result{};
+    std::array<move, (1 << BOARD_SIZE) * BOARD_SIZE> result{};
 
-    for (uint32_t i=0;i<BOARD_SIZE;i++)
+    for (uint32_t i=0;i<(1<<BOARD_SIZE);i++)
     {
-      #ifdef MONOTONIC
-      result[i] = move(1<<i);
-      #else
-      result[i] = move(1<<i, i);
-      #endif
+      uint32_t x = ~i & 0b111111111;
+
+      int cnt = 0;
+
+      while (x)
+      {
+        uint32_t mv = (uint32_t)1 << (31 - __builtin_clz(x));
+        result[i*BOARD_SIZE+cnt] = move(mv);
+        x ^= mv;
+        cnt++;
+      }
+
+      for (int j=cnt;j<BOARD_SIZE;j++)
+      {
+        result[i*BOARD_SIZE+j] = 0;
+      }
+    }
+
+    return result;
+  }();
+
+  static constexpr std::array<uint32_t, (1 << BOARD_SIZE)> all_moves_cnt = []()
+  {
+    std::array<uint32_t, (1 << BOARD_SIZE)> result{};
+
+    for (uint32_t i=0;i<(1<<BOARD_SIZE);i++)
+    {
+      uint32_t x = ~i & 0b111111111;
+
+      int cnt = 0;
+
+      while (x)
+      {
+        x ^= (uint32_t)1 << (31 - __builtin_clz(x));
+        cnt++;
+      }
+
+      result[i] = cnt;
     }
 
     return result;
