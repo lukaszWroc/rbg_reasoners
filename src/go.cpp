@@ -147,8 +147,40 @@ void game_state::apply_move(const move &m)
 
 void game_state::get_points()
 {
-  variables[0] = score(whiteBoard);
-  variables[1] = score(blackBoard);
+  for (int i=0;i<BOARD_SIZE;i++)
+  {
+    if (!blackBoard.get(i) && !whiteBoard.get(i) && !vis[i])
+    {
+      dfs(i, i);
+    }
+  }
+
+  for (int i=0;i<BOARD_SIZE;i++)
+  {
+    if (!blackBoard.get(i) && !whiteBoard.get(i))
+    {
+      if (visBlack[find(i)] && !visWhite[find(i)] && !alreadyCounted[find(i)])
+      {
+        variables[1] += count_pieces(taken_board[find(i)]);
+        alreadyCounted[find(i)] = true;
+      }
+      else if (!visBlack[find(i)] && visWhite[find(i)] && !alreadyCounted[find(i)])
+      {
+        variables[0] += count_pieces(taken_board[find(i)]);
+        alreadyCounted[find(i)] = true;
+      }
+    }
+    else if (blackBoard.get(find(i)) && !alreadyCounted[find(i)])
+    {
+      variables[1] += count_pieces(taken_board[find(i)]);
+      alreadyCounted[find(i)] = true;
+    }
+    else if (whiteBoard.get(find(i)) && !alreadyCounted[find(i)])
+    {
+      variables[0] += count_pieces(taken_board[find(i)]);
+      alreadyCounted[find(i)] = true;
+    }
+  }
 }
 
 void game_state::prepare(std::vector<move>& moves, board &my, board& other)
@@ -203,18 +235,34 @@ void game_state::prepare(std::vector<move>& moves, board &my, board& other)
   }
 }
 
-void game_state::dfs(int i, int j, board &b, board &cb)
+void game_state::dfs(int node, int parent)
 {
-  (void)cb;
-  (void)b;
-  (void)j;
-  (void)i;
-}
+  vis[node] = true;
 
-int game_state::score(board &cb)
-{
-  (void)cb;
-  return 0;
+  taken_board[parent].set(node);
+
+  for (int i=0;i<4;i++)
+  {
+    uint32_t pos = neighbors[(node << 2) + i];
+
+    if (pos == BLOCK)
+    {
+      break;
+    }
+
+    if (blackBoard.get(pos))
+    {
+      visBlack[parent] = true;
+    }
+    else if (whiteBoard.get(pos))
+    {
+      visWhite[parent] = true;
+    }
+    else if (!vis[pos])
+    {
+      dfs(pos, parent);
+    }
+  }
 }
 
 void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& moves)
@@ -228,8 +276,10 @@ void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& mo
 
   if ((passed[1] && passed[2]) || turn_limit == TURN_LIMIT)
   {
-    // get_points();
+    get_points();
+
     exit = true;
+
     return;
   }
 

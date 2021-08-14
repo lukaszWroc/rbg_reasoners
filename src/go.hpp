@@ -83,19 +83,23 @@ private:
   board blackBoard;
   board whiteBoard;
 
+  bool visBlack[BOARD_SIZE]{};
+  bool visWhite[BOARD_SIZE]{};
+  bool alreadyCounted[BOARD_SIZE]{};
+  bool vis[BOARD_SIZE]{};
+
   int turn_limit = 0;
   bool passed[3] = {false, false, false};
 
+  void update(board &my, board &other, const move &m);
+  void dfs(int node, int parent);
+  void delete1(uint32_t pos);
+
   inline uint32_t count_pieces(board &b);
+
   inline void get_points();
   inline void prepare(std::vector<move>& moves, board &b, board &b2);
   inline void getFree(board &right, board &left, board &tmp);
-
-  void update(board &my, board &other, const move &m);
-  void dfs(int i, int j, board &b, board &cb);
-  void delete1(uint32_t pos);
-
-  int score(board &cb);
 
   inline void union1(uint32_t a, uint32_t b)
   {
