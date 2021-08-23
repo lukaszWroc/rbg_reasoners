@@ -3,9 +3,10 @@
 #include <cstdint>
 #include <vector>
 
-#undef MONOTONIC
+// #undef MONOTONIC
 
 #define BOARD_ROWS 11
+
 #define BOARD_SIZE BOARD_ROWS * BOARD_ROWS
 
 namespace reasoner

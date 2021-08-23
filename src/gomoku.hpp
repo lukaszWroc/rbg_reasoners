@@ -9,7 +9,7 @@
 
 #define BOARD_SIZE BOARD_ROWS*BOARD_ROWS
 
-#undef MONOTONIC
+// #undef MONOTONIC
 
 namespace reasoner
 {

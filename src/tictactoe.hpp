@@ -5,7 +5,7 @@
 
 #define BOARD_SIZE 9
 
-#undef MONOTONIC
+// #undef MONOTONIC
 
 namespace reasoner
 {
