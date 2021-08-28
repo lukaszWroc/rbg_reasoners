@@ -315,9 +315,9 @@ void game_state::apply_move(const move &m)
     whiteEP = 0;
   }
 
-  if (movesrule == 49)
+  if (movesrule == 50)
   {
-    variables[current_player - 1] = 50;
+    variables[current_player - 1]          = 50;
     variables[(current_player ^ 0b11) - 1] = 50;
     exit = true;
   }
@@ -357,13 +357,13 @@ void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& mo
 
     if (win == 1)
     {
-      variables[current_player - 1] = 0;
+      variables[current_player - 1]          = 0;
       variables[(current_player ^ 0b11) - 1] = 100;
       exit = true;
     }
     else if (win == 0)
     {
-      variables[current_player - 1] = 50;
+      variables[current_player - 1]          = 50;
       variables[(current_player ^ 0b11) - 1] = 50;
       exit = true;
     }
@@ -417,7 +417,7 @@ void game_state::getWhitePawnsMoves(std::vector<move>& moves)
   upgradeWhite(promoted, 8, moves);
   addMovesRight(moves, moveUp, 8);
 
-  uint64_t attackLeft   = (blackFigures ^ blackKing) & ((whitePawns & leftBoard) >> 9);
+  uint64_t attackLeft  = (blackFigures ^ blackKing) & ((whitePawns & leftBoard) >> 9);
   uint64_t attackRight = (blackFigures ^ blackKing) & ((whitePawns & rightBoard) >> 7);
 
   addMovesRight(moves, attackLeft ^ (attackLeft & whitePromotionLine), 9);
@@ -425,7 +425,6 @@ void game_state::getWhitePawnsMoves(std::vector<move>& moves)
 
   upgradeWhite(attackLeft & whitePromotionLine,9,moves);
   upgradeWhite(attackRight & whitePromotionLine,7,moves);
-
 
   uint64_t moveUp2   = freeSpace & ((whitePawns & whiteFirstLine) >> 16);
   uint64_t enPassant = moveUp2 ^ (moveUp2 & (((~freeSpace) & whiteSecondLine) >> 8));
@@ -1088,53 +1087,52 @@ void game_state::getKingMoves(std::vector<move>& moves, uint64_t figures)
   getMoveLeft(moves, figures, oponent, leftBoard, freeSpace, 7);
   getMoveLeft(moves, figures, oponent, rightBoard, freeSpace, 9);
 
-
-    if (current_player == 1)
+  if (current_player == 1)
+  {
+    if (!whiteKingMoved)
     {
-      if (!whiteKingMoved)
+      if (!whiteRightRookMoved)
       {
-        if (!whiteRightRookMoved)
+        if ((freeSpace & whiteCastlingRight2) && (freeSpace &whiteCastlingRight1) &&
+              !check() && !check(whiteKing >> 1, whiteKing) && !check(whiteKing >> 2, whiteKing))
         {
-          if ((freeSpace & whiteCastlingRight2) && (freeSpace &whiteCastlingRight1) &&
-                !check() && !check(whiteKing >> 1, whiteKing) && !check(whiteKing >> 2, whiteKing))
-          {
-            moves.emplace_back(1,1,1);
-          }
+          moves.emplace_back(1,1,1);
         }
+      }
 
-        if (!whiteLeftRookMoved)
+      if (!whiteLeftRookMoved)
+      {
+        if ((freeSpace & whiteCastlingLeft2) && (freeSpace & whiteCastlingLeft1) && (freeSpace & whiteCastlingLeft3) &&
+              !check() && !check(whiteKing << 1, whiteKing) && !check(whiteKing << 2, whiteKing))
         {
-          if ((freeSpace & whiteCastlingLeft2) && (freeSpace & whiteCastlingLeft1) && (freeSpace & whiteCastlingLeft3) &&
-                !check() && !check(whiteKing << 1, whiteKing) && !check(whiteKing << 2, whiteKing))
-          {
-            moves.emplace_back(1,1,2);
-          }
+          moves.emplace_back(1,1,2);
         }
       }
     }
-    else
+  }
+  else
+  {
+    if (!blackKingMoved)
     {
-      if (!blackKingMoved)
+      if (!blackRightRookMoved)
       {
-        if (!blackRightRookMoved)
+        if ((freeSpace & blackCastlingRight2) && (freeSpace &blackCastlingRight1) &&
+              !check() && !check(blackKing >> 1, blackKing) && !check(blackKing >> 2, blackKing))
         {
-          if ((freeSpace & blackCastlingRight2) && (freeSpace &blackCastlingRight1) &&
-                !check() && !check(blackKing >> 1, blackKing) && !check(blackKing >> 2, blackKing))
-          {
-            moves.emplace_back(1,1,3);
-          }
+          moves.emplace_back(1,1,3);
         }
+      }
 
-        if (!blackLeftRookMoved)
+      if (!blackLeftRookMoved)
+      {
+        if ((freeSpace & blackCastlingLeft2) && (freeSpace & blackCastlingLeft1) && ( freeSpace & blackCastlingLeft3) &&
+              !check() && !check(blackKing << 1, blackKing)  && !check(blackKing << 2, blackKing))
         {
-          if ((freeSpace & blackCastlingLeft2) && (freeSpace & blackCastlingLeft1) && ( freeSpace & blackCastlingLeft3) &&
-                !check() && !check(blackKing << 1, blackKing)  && !check(blackKing << 2, blackKing))
-          {
-            moves.emplace_back(1,1,4);
-          }
+          moves.emplace_back(1,1,4);
         }
       }
     }
+  }
 }
 
 void game_state::getDiagonalMoves(std::vector<move>& moves, uint64_t figures)
