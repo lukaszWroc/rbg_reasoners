@@ -5,12 +5,14 @@
 
 // #undef MONOTONIC
 
-#define BOARD_ROWS 11
-
-#define BOARD_SIZE BOARD_ROWS * BOARD_ROWS
-
 namespace reasoner
 {
+//
+// BOARD_ROWS can be changed in the interval <1, 11>
+//
+constexpr int BOARD_ROWS = 11;
+constexpr int BOARD_SIZE = BOARD_ROWS * BOARD_ROWS;
+
 constexpr int NUMBER_OF_PLAYERS   = 3;
 #ifdef MONOTONIC
 constexpr int MONOTONIC_CLASSES   = 1;

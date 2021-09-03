@@ -3,11 +3,14 @@
 #include <cstdint>
 #include <vector>
 
-#define BOARD_ROWS 10
-#define BOARD_SIZE BOARD_ROWS*BOARD_ROWS
-
 namespace reasoner
 {
+//
+// BOARD_ROWS can't be changed
+//
+constexpr int BOARD_ROWS = 10;
+constexpr int BOARD_SIZE = BOARD_ROWS * BOARD_ROWS;
+
 constexpr int NUMBER_OF_PLAYERS   = 3;
 constexpr int MONOTONIC_CLASSES   = 0;
 constexpr int NUMBER_OF_VARIABLES = 2;

@@ -5,12 +5,12 @@
 
 #undef LIMIT_TURNS
 
-#ifdef LIMIT_TURNS
-#define TURN_LIMIT 200
-#endif
-
 namespace reasoner
 {
+#ifdef LIMIT_TURNS
+constexpr int TURN_LIMIT = 200;
+#endif
+
 constexpr int NUMBER_OF_PLAYERS   = 3;
 constexpr int MONOTONIC_CLASSES   = 0;
 constexpr int NUMBER_OF_VARIABLES = 2;

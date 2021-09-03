@@ -3,12 +3,15 @@
 #include <cstdint>
 #include <vector>
 
-#define BOARD_SIZE 9
-
 // #undef MONOTONIC
 
 namespace reasoner
 {
+//
+// This size can't be changed
+//
+constexpr int BOARD_SIZE = 9;
+
 constexpr int NUMBER_OF_PLAYERS   = 3;
 #ifdef MONOTONIC
 constexpr int MONOTONIC_CLASSES   = 1;

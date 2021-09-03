@@ -3,6 +3,9 @@
 #include <cstdint>
 #include <vector>
 
+//
+// BOARD_ROWS can by any positive integer
+//
 #define BOARD_ROWS 10
 
 #if BOARD_ROWS == 10
@@ -13,7 +16,7 @@
 
 namespace reasoner
 {
-constexpr int PIECE_NUMBER            = BOARD_ROWS + BOARD_ROWS%2;
+constexpr int PIECE_NUMBER            = BOARD_ROWS + (BOARD_ROWS % 2);
 constexpr int PIECE_NUMBER_FOR_PLAYER = PIECE_NUMBER/2;
 
 constexpr int NUMBER_OF_PLAYERS   = 3;

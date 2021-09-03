@@ -3,12 +3,15 @@
 #include <cstdint>
 #include <vector>
 
-#define BOARD_ROWS 19
-
 #undef NO_PASS
 
 namespace reasoner
 {
+//
+// BOARD_ROWS can by any positive integer
+//
+constexpr int BOARD_ROWS = 19;
+
 constexpr int BOARD_SIZE = BOARD_ROWS * BOARD_ROWS;
 constexpr int BLOCK      = BOARD_SIZE + 100;
 constexpr int PASS       = BOARD_SIZE + 1;

@@ -1,17 +1,31 @@
 
-#include <cstdint>
-#include <vector>
 #include <array>
-#include <iostream>
+#include <cstdint>
 #include <map>
-
-#define BOARD_ROWS 8
-#define BOARD_SIZE BOARD_ROWS * BOARD_ROWS
-#define TURN_LIMIT 200
-#define OUTSIDE_BOARD 3
+#include <vector>
 
 namespace reasoner
 {
+//
+// This variables can't be changed
+//
+constexpr int BOARD_ROWS    = 8;
+constexpr int BOARD_SIZE    = BOARD_ROWS * BOARD_ROWS;
+constexpr int OUTSIDE_BOARD = 3;
+constexpr int PASS          = BOARD_SIZE + 1;
+
+//
+// TURN_LIMIT can by any positive integer
+//
+constexpr int TURN_LIMIT = 200;
+
+constexpr int NUMBER_OF_PLAYERS   = 3;
+constexpr int MONOTONIC_CLASSES   = 0;
+constexpr int NUMBER_OF_VARIABLES = 2;
+constexpr int NUMBER_OF_PIECES    = 2;
+
+class resettable_bitarray_stack {};
+
 struct board_state
 {
   board_state() {};
@@ -79,15 +93,6 @@ struct board_state
   uint64_t camel;
   uint64_t elephant;
 };
-
-constexpr int PASS = BOARD_SIZE + 1;
-
-constexpr int NUMBER_OF_PLAYERS   = 3;
-constexpr int MONOTONIC_CLASSES   = 0;
-constexpr int NUMBER_OF_VARIABLES = 2;
-constexpr int NUMBER_OF_PIECES    = 2;
-
-class resettable_bitarray_stack {};
 
 struct move
 {

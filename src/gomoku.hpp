@@ -5,14 +5,16 @@
 
 #define STANDARD
 
-#define BOARD_ROWS 15
-
-#define BOARD_SIZE BOARD_ROWS*BOARD_ROWS
-
 // #undef MONOTONIC
 
 namespace reasoner
 {
+//
+// BOARD_ROWS can by any positive integer
+//
+constexpr int BOARD_ROWS = 15;
+constexpr int BOARD_SIZE = BOARD_ROWS * BOARD_ROWS;
+
 constexpr int NUMBER_OF_PLAYERS   = 3;
 #ifdef MONOTONIC
 constexpr int MONOTONIC_CLASSES   = 2;
