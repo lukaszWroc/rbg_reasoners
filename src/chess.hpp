@@ -3,6 +3,12 @@
 #include <cstdint>
 #include <vector>
 
+#undef THREEFOLD_REPETITION
+
+#ifdef THREEFOLD_REPETITION
+#include <unordered_map>
+#endif
+
 namespace reasoner
 {
 constexpr int NUMBER_OF_PLAYERS   = 3;
@@ -12,6 +18,47 @@ constexpr int NUMBER_OF_PIECES    = 2;
 
 class resettable_bitarray_stack {};
 
+#ifdef THREEFOLD_REPETITION
+struct board_state
+{
+  board_state() {};
+  board_state(uint64_t _pawns, uint64_t _rooks, uint64_t _bishops, uint64_t _knights,
+    uint64_t _queens, uint64_t _king)
+    : pawns(_pawns), rooks(_rooks), bishops(_bishops), knights(_knights), queens(_queens), king(_king)
+  {};
+
+  bool operator==(const board_state &b) const
+  {
+    return !((this -> king ^ b.king) |
+          (this -> queens  ^ b.queens) |
+          (this -> rooks   ^ b.rooks) |
+          (this -> knights ^ b.knights) |
+          (this -> bishops ^ b.bishops) |
+          (this -> pawns   ^ b.pawns));
+
+  }
+
+  uint64_t hash() const
+  {
+    return pawns ^ bishops ^ knights ^ rooks ^ queens ^ king;
+  }
+
+  uint64_t pawns;
+  uint64_t rooks;
+  uint64_t bishops;
+  uint64_t knights;
+  uint64_t queens;
+  uint64_t king;
+};
+
+struct hash_fn
+{
+  std::size_t operator() (const std::pair<board_state, board_state> &board_pair) const
+  {
+    return board_pair.first.hash() ^ board_pair.second.hash();
+  }
+};
+#endif
 struct move
 {
   uint64_t end, start;
@@ -46,6 +93,12 @@ public:
   bool is_legal(const move& m) const;
 
 private:
+  #ifdef THREEFOLD_REPETITION
+  std::unordered_map<std::pair<board_state, board_state>, int, hash_fn> states;
+
+  std::vector<int> repetition;
+  #endif
+
   uint64_t blackFigures        = (uint64_t)0xffff;
   uint64_t blackPawns          = (uint64_t)0xff << 8;
   uint64_t blackRooks          = (uint64_t)0b10000001;

@@ -322,6 +322,32 @@ void game_state::apply_move(const move &m)
     exit = true;
   }
 
+  #ifdef THREEFOLD_REPETITION
+  auto res = states.find(std::make_pair(board_state(whitePawns, whiteRooks,  whiteBishops,
+    whiteKnights, whiteQueens, whiteKing), board_state(blackPawns, blackRooks,  blackBishops,
+    blackKnights, blackQueens, blackKing)));
+
+  if (res == states.end())
+  {
+    repetition.push_back(1);
+
+    states[std::make_pair(board_state(whitePawns, whiteRooks,  whiteBishops,
+      whiteKnights, whiteQueens, whiteKing), board_state(blackPawns, blackRooks,  blackBishops,
+      blackKnights, blackQueens, blackKing))] = repetition.size() - 1;
+  }
+  else
+  {
+    repetition[res -> second]++;
+
+    if (repetition[res -> second] == 3)
+    {
+      variables[current_player - 1]          = 50;
+      variables[(current_player ^ 0b11) - 1] = 50;
+      exit = true;
+    }
+  }
+  #endif
+
   current_player ^= 0b11;
 }
 
