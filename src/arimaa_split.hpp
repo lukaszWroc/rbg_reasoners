@@ -1,7 +1,7 @@
 
 #include <array>
 #include <cstdint>
-#include <map>
+#include <unordered_map>
 #include <vector>
 
 namespace reasoner
@@ -30,33 +30,44 @@ struct board_state
 {
   board_state() {};
   board_state(uint64_t _rabbits, uint64_t _horses, uint64_t _cats, uint64_t _dogs,
-      uint64_t _camel, uint64_t _elephant)
-      : rabbits(_rabbits), horses(_horses), cats(_cats), dogs(_dogs), camel(_camel), elephant(_elephant)
-    {};
+    uint64_t _camel, uint64_t _elephant)
+    : rabbits(_rabbits), horses(_horses), cats(_cats), dogs(_dogs), camel(_camel), elephant(_elephant)
+  {};
 
   void set(uint64_t _rabbits, uint64_t _horses, uint64_t _cats, uint64_t _dogs,
-      uint64_t _camel, uint64_t _elephant)
-    {
-      rabbits  =_rabbits;
-      horses   = _horses; 
-      cats     = _cats;
-      dogs     = _dogs;
-      camel    = _camel;
-      elephant = _elephant;
-    };
+    uint64_t _camel, uint64_t _elephant)
+  {
+    rabbits  =_rabbits;
+    horses   = _horses;
+    cats     = _cats;
+    dogs     = _dogs;
+    camel    = _camel;
+    elephant = _elephant;
+  };
   
   bool cmp(uint64_t _rabbits, uint64_t _horses, uint64_t _cats, uint64_t _dogs,
-      uint64_t _camel, uint64_t _elephant)
-    {
-      return ((rabbits  ^ _rabbits) |
-            (horses   ^ _horses) |
-            (cats     ^ _cats) |
-            (dogs     ^ _dogs) |
-            (camel    ^ _camel) |
-            (elephant ^ _elephant));
-    };
+    uint64_t _camel, uint64_t _elephant)
+  {
+    return ((rabbits  ^ _rabbits) |
+          (horses   ^ _horses) |
+          (cats     ^ _cats) |
+          (dogs     ^ _dogs) |
+          (camel    ^ _camel) |
+          (elephant ^ _elephant));
+  };
 
-  bool operator< (const board_state &b) const
+  bool operator==(const board_state &b) const
+  {
+    return !((this -> elephant ^ b.elephant) |
+          (this -> camel ^ b.camel) |
+          (this -> horses ^ b.horses) |
+          (this -> dogs ^ b.dogs) |
+          (this -> cats ^ b.cats) |
+          (this -> rabbits ^ b.rabbits));
+
+  }
+
+  bool operator<(const board_state &b) const
   {
     if (this -> elephant ^ b.elephant)
     {
@@ -86,12 +97,25 @@ struct board_state
     return this -> rabbits < b.rabbits;
   }
 
+  uint64_t hash() const
+  {
+    return rabbits ^ cats ^ dogs ^ horses ^ camel ^ elephant;
+  }
+
   uint64_t rabbits;
   uint64_t horses;
   uint64_t cats;
   uint64_t dogs;
   uint64_t camel;
   uint64_t elephant;
+};
+
+struct hash_fn
+{
+  std::size_t operator() (const std::pair<board_state, board_state> &board_pair) const
+  {
+    return board_pair.first.hash() ^ board_pair.second.hash();
+  }
 };
 
 struct move
@@ -109,7 +133,7 @@ class game_state
 {
   int states_cnt = 0;
 
-  std::map<std::pair<board_state, board_state>, int> states;
+  std::unordered_map<std::pair<board_state, board_state>, int, hash_fn> states;
 
   int repetition[TURN_LIMIT] = {};
 

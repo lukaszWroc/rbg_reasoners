@@ -550,13 +550,6 @@ void game_state::apply_move(const move &m)
     else
     {
       repetition[res -> second]++;
-      if (repetition[res -> second] == 3) // state repeted 3rd time current player lose
-      {
-        variables[current_player - 1] = 0;
-        variables[(current_player ^ 0b11) - 1] = 100;
-        exit = true;
-        return;
-      }
     }
 
     return;
@@ -621,14 +614,8 @@ void game_state::apply_move(const move &m)
     else
     {
       repetition[res -> second]++;
-      if (repetition[res -> second] == 3) // state repeted 3rd time current player lost
-      {
-        variables[current_player - 1] = 0;
-        variables[(current_player ^ 0b11) - 1] = 100;
-        exit = true;
-        return;
-      }
     }
+
     move_cnt = 0;
     current_player ^= 0b11;
   }
@@ -708,7 +695,13 @@ void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& mo
     (last_gold_state.cmp(goldRabbits, goldHorses, goldCats, goldDogs, goldCamel, goldElephant) ||
     last_silver_state.cmp(silverRabbits, silverHorses, silverCats, silverDogs, silverCamel, silverElephant)))
   {
-    moves.emplace_back(PASS);
+    auto res = states.find(std::make_pair(board_state(goldRabbits, goldHorses, goldCats, goldDogs, goldCamel, goldElephant),
+      board_state(silverRabbits, silverHorses, silverCats, silverDogs, silverCamel, silverElephant)));
+
+    if (res == states.end() || (res != states.end() && repetition[res -> second] < 2))
+    {
+      moves.emplace_back(PASS);
+    }
   }
 
   if (moves.size() == 0)
@@ -1077,7 +1070,13 @@ void game_state::insert(std::vector<move>& moves, uint64_t from1, uint64_t to1, 
     if (last_gold_state.cmp(b1.rabbits, b1.horses, b1.cats, b1.dogs, b1.camel, b1.elephant) ||
         last_silver_state.cmp(b2.rabbits, b2.horses, b2.cats, b2.dogs, b2.camel, b2.elephant))
     {
-      moves.emplace_back(from1, to1, from2, to2);
+      auto res = states.find(std::make_pair(board_state(b1.rabbits, b1.horses, b1.cats, b1.dogs, b1.camel, b1.elephant),
+        board_state(b2.rabbits, b2.horses, b2.cats, b2.dogs, b2.camel, b2.elephant)));
+
+      if (res == states.end() || (res != states.end() && repetition[res -> second] < 2))
+      {
+        moves.emplace_back(from1, to1, from2, to2);
+      }
     }
   }
   else
@@ -1099,7 +1098,13 @@ void game_state::insert(std::vector<move>& moves, uint64_t from1, uint64_t to1, 
     if (last_gold_state.cmp(b1.rabbits, b1.horses, b1.cats, b1.dogs, b1.camel, b1.elephant) ||
         last_silver_state.cmp(b2.rabbits, b2.horses, b2.cats, b2.dogs, b2.camel, b2.elephant))
     {
-      moves.emplace_back(from1, to1, from2, to2);
+      auto res = states.find(std::make_pair(board_state(b1.rabbits, b1.horses, b1.cats, b1.dogs, b1.camel, b1.elephant),
+        board_state(b2.rabbits, b2.horses, b2.cats, b2.dogs, b2.camel, b2.elephant)));
+
+      if (res == states.end() || (res != states.end() && repetition[res -> second] < 2))
+      {
+        moves.emplace_back(from1, to1, from2, to2);
+      }
     }
   }
 }
