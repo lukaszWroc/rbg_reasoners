@@ -30,51 +30,140 @@ int game_state::get_monotonicity_class(void)
 bool game_state::is_legal([[maybe_unused]] const move& m) const
 {
   #ifdef MONOTONIC
-  uint32_t x = m.mr%BOARD_ROWS;
-  uint32_t y = m.mr/BOARD_ROWS;
-
-  return !(left_right[x] & ((uint32_t)1 << (uint32_t)y)) &&
-    !(up_down[y] & ((uint32_t)1 << (uint32_t)x)) && !exit;
-
+  return !redBoard.get(m.mr) && !blueBoard.get(m.mr) && !exit;
   #else
   return -1;
   #endif
 }
 
-bool game_state::win_condition_up_down()
+void game_state::win_condition_blue(uint32_t m)
 {
-  uint16_t mask = up_down[0];
 
-  for (int i=1;i<BOARD_ROWS;i++)
+  if (secondEdge && firstEdge)
   {
-    mask = mask_to_mask[((uint32_t)mask << BOARD_ROWS) + up_down[i]];
+    return;
   }
 
-  return mask;
+  vis[m] = true;
+
+  vis_list[vis_list_cnt++] = m;
+
+  uint32_t c = m/BOARD_ROWS2;
+
+  if (c == 1)
+  {
+    firstEdge = true;
+  }
+
+  if (c == BOARD_ROWS2-2)
+  {
+    secondEdge = true;
+  }
+
+  if (blueBoard.get(m-1) && !vis[m-1])
+  {
+    win_condition_blue(m-1);
+  }
+
+  if (blueBoard.get(m+1) && !vis[m+1])
+  {
+    win_condition_blue(m+1);
+  }
+
+  if (blueBoard.get(m+BOARD_ROWS2) && !vis[m+BOARD_ROWS2])
+  {
+    win_condition_blue(m+BOARD_ROWS2);
+  }
+
+  if (blueBoard.get(m-BOARD_ROWS2) && !vis[m-BOARD_ROWS2])
+  {
+    win_condition_blue(m-BOARD_ROWS2);
+  }
+
+  if (blueBoard.get(m+BOARD_ROWS2+1) && !vis[m+BOARD_ROWS2+1])
+  {
+    win_condition_blue(m+BOARD_ROWS2+1);
+  }
+
+  if (blueBoard.get(m-BOARD_ROWS2-1) && !vis[m-BOARD_ROWS2-1])
+  {
+    win_condition_blue(m-BOARD_ROWS2-1);
+  }
 }
 
-bool game_state::win_condition_left_right()
+void game_state::win_condition_red(uint32_t m)
 {
-  uint16_t mask = left_right[0];
-
-  for (int i=1;i<BOARD_ROWS;i++)
+  if (secondEdge && firstEdge)
   {
-    mask = mask_to_mask[((uint32_t)mask << BOARD_ROWS) + left_right[i]];
+    return;
   }
 
-  return mask;
+  vis[m] = true;
+
+  vis_list[vis_list_cnt++] = m;
+
+  uint32_t c = m%BOARD_ROWS2;
+
+  if (c == 1)
+  {
+    firstEdge = true;
+  }
+
+  if (c == BOARD_ROWS2-2)
+  {
+    secondEdge = true;
+  }
+
+  if (redBoard.get(m-1) && !vis[m-1])
+  {
+    win_condition_red(m-1);
+  }
+
+  if (redBoard.get(m+1) && !vis[m+1])
+  {
+    win_condition_red(m+1);
+  }
+
+  if (redBoard.get(m+BOARD_ROWS2) && !vis[m+BOARD_ROWS2])
+  {
+    win_condition_red(m+BOARD_ROWS2);
+  }
+
+  if (redBoard.get(m-BOARD_ROWS2) && !vis[m-BOARD_ROWS2])
+  {
+    win_condition_red(m-BOARD_ROWS2);
+  }
+
+  if (redBoard.get(m+BOARD_ROWS2+1) && !vis[m+BOARD_ROWS2+1])
+  {
+    win_condition_red(m+BOARD_ROWS2+1);
+  }
+
+  if (redBoard.get(m-BOARD_ROWS2-1) && !vis[m-BOARD_ROWS2-1])
+  {
+    win_condition_red(m-BOARD_ROWS2-1);
+  }
 }
 
 void game_state::apply_move(const move &m)
 {
-  uint32_t x = m.mr%BOARD_ROWS;
-  uint32_t y = m.mr/BOARD_ROWS;
+  for (uint32_t i=0;i<vis_list_cnt;i++)
+  {
+    vis[vis_list[i]] = false;
+  }
+
+  vis_list_cnt = 0;
 
   if (current_player == 1)
   {
-    left_right[x] |= ((uint32_t)1 << (uint32_t)y);
+    blueBoard.set(m.mr);
 
-    if (win_condition_left_right())
+    firstEdge  = false;
+    secondEdge = false;
+
+    win_condition_blue(m.mr);
+
+    if (firstEdge && secondEdge)
     {
       variables[0] = 100;
       variables[1] = 0;
@@ -84,9 +173,14 @@ void game_state::apply_move(const move &m)
   }
   else
   {
-    up_down[y] |= ((uint32_t)1 << (uint32_t)x);
+    redBoard.set(m.mr);
 
-    if (win_condition_up_down())
+    firstEdge  = false;
+    secondEdge = false;
+
+    win_condition_red(m.mr);
+
+    if (firstEdge && secondEdge)
     {
       variables[1] = 100;
       variables[0] = 0;
@@ -111,7 +205,7 @@ void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& mo
     return;
   }
 
-  if (last_pos == 100)
+  if (last_pos == BOARD_SIZE2 + 1)
   {
     moves.insert(moves.begin(), std::begin(empty_array), std::end(empty_array));
     return;
