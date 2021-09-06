@@ -88,6 +88,19 @@ static constexpr std::array<move, BOARD_SIZE> fill_empty()
   return result;
 }
 
+static constexpr std::array<uint32_t, BOARD_SIZE2> fill_vis()
+{
+  std::array<uint32_t, BOARD_SIZE2> result{};
+
+
+  for (uint32_t i=0;i<BOARD_SIZE2;i++)
+  {
+    result[i] = 0;
+  }
+
+  return result;
+}
+
 class game_state
 {
 public:
@@ -101,9 +114,10 @@ public:
   bool apply_any_move(resettable_bitarray_stack&);
   bool is_legal(const move& m) const;
 
-  game_state()
+  game_state() : vis(vis_ini)
   {
     empty.insert(empty.begin(), std::begin(empty_array), std::end(empty_array));
+    // std::fill(vis.begin(), vis.end(), 0);
   }
 
 private:
@@ -125,10 +139,13 @@ private:
 
   std::vector<move> empty;
 
-  uint32_t vis_list[BOARD_SIZE2];
+  uint32_t current_threshold = 1;
 
-  bool vis[BOARD_SIZE2] = {false};
+  std::array<uint32_t, BOARD_SIZE2> vis;
+  static constexpr std::array<uint32_t, BOARD_SIZE2> vis_ini = fill_vis();
 
+
+  void resetVis();
   void win_condition_blue(uint32_t m);
   void win_condition_red(uint32_t m);
 };

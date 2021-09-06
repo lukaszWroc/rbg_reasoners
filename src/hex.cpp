@@ -36,17 +36,19 @@ bool game_state::is_legal([[maybe_unused]] const move& m) const
   #endif
 }
 
+void game_state::resetVis()
+{
+  if (++current_threshold == 0)
+  {
+    ++current_threshold;
+
+    std::fill(vis.begin(), vis.end(), 0);
+  }
+}
+
 void game_state::win_condition_blue(uint32_t m)
 {
-
-  if (secondEdge && firstEdge)
-  {
-    return;
-  }
-
-  vis[m] = true;
-
-  vis_list[vis_list_cnt++] = m;
+  vis[m] = current_threshold;
 
   uint32_t c = m/BOARD_ROWS2;
 
@@ -54,38 +56,37 @@ void game_state::win_condition_blue(uint32_t m)
   {
     firstEdge = true;
   }
-
-  if (c == BOARD_ROWS2-2)
+  else if (c == BOARD_ROWS2-2)
   {
     secondEdge = true;
   }
 
-  if (blueBoard.get(m-1) && !vis[m-1])
+  if (blueBoard.get(m-1) && vis[m-1] != current_threshold)
   {
     win_condition_blue(m-1);
   }
 
-  if (blueBoard.get(m+1) && !vis[m+1])
+  if (blueBoard.get(m+1) && vis[m+1] != current_threshold)
   {
     win_condition_blue(m+1);
   }
 
-  if (blueBoard.get(m+BOARD_ROWS2) && !vis[m+BOARD_ROWS2])
+  if (blueBoard.get(m+BOARD_ROWS2) && vis[m+BOARD_ROWS2] != current_threshold)
   {
     win_condition_blue(m+BOARD_ROWS2);
   }
 
-  if (blueBoard.get(m-BOARD_ROWS2) && !vis[m-BOARD_ROWS2])
+  if (blueBoard.get(m-BOARD_ROWS2) && vis[m-BOARD_ROWS2] != current_threshold)
   {
     win_condition_blue(m-BOARD_ROWS2);
   }
 
-  if (blueBoard.get(m+BOARD_ROWS2+1) && !vis[m+BOARD_ROWS2+1])
+  if (blueBoard.get(m+BOARD_ROWS2+1) && vis[m+BOARD_ROWS2+1] != current_threshold)
   {
     win_condition_blue(m+BOARD_ROWS2+1);
   }
 
-  if (blueBoard.get(m-BOARD_ROWS2-1) && !vis[m-BOARD_ROWS2-1])
+  if (blueBoard.get(m-BOARD_ROWS2-1) && vis[m-BOARD_ROWS2-1] != current_threshold)
   {
     win_condition_blue(m-BOARD_ROWS2-1);
   }
@@ -93,14 +94,7 @@ void game_state::win_condition_blue(uint32_t m)
 
 void game_state::win_condition_red(uint32_t m)
 {
-  if (secondEdge && firstEdge)
-  {
-    return;
-  }
-
-  vis[m] = true;
-
-  vis_list[vis_list_cnt++] = m;
+  vis[m] = current_threshold;
 
   uint32_t c = m%BOARD_ROWS2;
 
@@ -108,38 +102,37 @@ void game_state::win_condition_red(uint32_t m)
   {
     firstEdge = true;
   }
-
-  if (c == BOARD_ROWS2-2)
+  else if (m%BOARD_ROWS2 == BOARD_ROWS2-2)
   {
     secondEdge = true;
   }
 
-  if (redBoard.get(m-1) && !vis[m-1])
+  if (redBoard.get(m-1) && vis[m-1] != current_threshold)
   {
     win_condition_red(m-1);
   }
 
-  if (redBoard.get(m+1) && !vis[m+1])
+  if (redBoard.get(m+1) && vis[m+1] != current_threshold)
   {
     win_condition_red(m+1);
   }
 
-  if (redBoard.get(m+BOARD_ROWS2) && !vis[m+BOARD_ROWS2])
+  if (redBoard.get(m+BOARD_ROWS2) && vis[m+BOARD_ROWS2] != current_threshold)
   {
     win_condition_red(m+BOARD_ROWS2);
   }
 
-  if (redBoard.get(m-BOARD_ROWS2) && !vis[m-BOARD_ROWS2])
+  if (redBoard.get(m-BOARD_ROWS2) && vis[m-BOARD_ROWS2] != current_threshold)
   {
     win_condition_red(m-BOARD_ROWS2);
   }
 
-  if (redBoard.get(m+BOARD_ROWS2+1) && !vis[m+BOARD_ROWS2+1])
+  if (redBoard.get(m+BOARD_ROWS2+1) && vis[m+BOARD_ROWS2+1] != current_threshold)
   {
     win_condition_red(m+BOARD_ROWS2+1);
   }
 
-  if (redBoard.get(m-BOARD_ROWS2-1) && !vis[m-BOARD_ROWS2-1])
+  if (redBoard.get(m-BOARD_ROWS2-1) && vis[m-BOARD_ROWS2-1] != current_threshold)
   {
     win_condition_red(m-BOARD_ROWS2-1);
   }
@@ -147,13 +140,6 @@ void game_state::win_condition_red(uint32_t m)
 
 void game_state::apply_move(const move &m)
 {
-  for (uint32_t i=0;i<vis_list_cnt;i++)
-  {
-    vis[vis_list[i]] = false;
-  }
-
-  vis_list_cnt = 0;
-
   if (current_player == 1)
   {
     blueBoard.set(m.mr);
@@ -194,6 +180,8 @@ void game_state::apply_move(const move &m)
   #endif
 
   current_player ^= 0b11;
+
+  resetVis();
 }
 
 void game_state::get_all_moves(resettable_bitarray_stack&, std::vector<move>& moves)
