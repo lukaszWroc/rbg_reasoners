@@ -348,7 +348,7 @@ void game_state::apply_move(const move &m)
   }
   #endif
 
-  if (movesrule == 50)
+  if (movesrule == 100)
   {
     variables[current_player - 1]          = 50;
     variables[(current_player ^ 0b11) - 1] = 50;
