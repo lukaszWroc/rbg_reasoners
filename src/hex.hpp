@@ -114,10 +114,10 @@ public:
   bool apply_any_move(resettable_bitarray_stack&);
   bool is_legal(const move& m) const;
 
-  game_state() : vis(vis_ini)
+  game_state() : vis(vis_ini), leader(leader_init), range(range_init),
+    firstEdgeArray(edgeArray_init), secondEdgeArray(edgeArray_init)
   {
     empty.insert(empty.begin(), std::begin(empty_array), std::end(empty_array));
-    // std::fill(vis.begin(), vis.end(), 0);
   }
 
 private:
@@ -139,14 +139,76 @@ private:
 
   std::vector<move> empty;
 
-  uint32_t current_threshold = 1;
-
-  std::array<uint32_t, BOARD_SIZE2> vis;
   static constexpr std::array<uint32_t, BOARD_SIZE2> vis_ini = fill_vis();
 
+  std::array<uint32_t, BOARD_SIZE2> vis;
 
-  void resetVis();
+  std::array<uint32_t, BOARD_SIZE2> leader;
+  std::array<uint32_t, BOARD_SIZE2> range;
+  std::array<board, BOARD_SIZE2> taken_board;
+  std::array<bool, BOARD_SIZE2> firstEdgeArray;
+  std::array<bool, BOARD_SIZE2> secondEdgeArray;
+
   void win_condition_blue(uint32_t m);
   void win_condition_red(uint32_t m);
+
+  inline void fix_win_condition(uint32_t pos, uint32_t &last_leader);
+
+  inline void union1(uint32_t a, uint32_t b)
+  {
+    leader[a] = b;
+    range[b] += range[a];
+  }
+
+  inline uint32_t find(uint32_t a)
+  {
+    if(a == leader[a])
+        return a;
+    leader[a] = find(leader[a]);
+    return leader[a];
+  }
+
+  inline void merge1(board &right, board &left)
+  {
+    for(int i=0;i<right.N;i++)
+    {
+      right.date[i] |= left.date[i];
+    }
+  }
+
+  static constexpr std::array<uint32_t, BOARD_SIZE2> range_init = []()
+  {
+    std::array<uint32_t, BOARD_SIZE2> tmp = {};
+
+    for (int i=0;i<BOARD_SIZE2;i++)
+    {
+      tmp[i]=1;
+    }
+    return tmp;
+  }();
+
+  static constexpr std::array<uint32_t, BOARD_SIZE2> leader_init = []()
+  {
+    std::array<uint32_t, BOARD_SIZE2> tmp = {};
+
+    for (uint32_t i=0;i<BOARD_SIZE2;i++)
+    {
+      tmp[i] = i;
+    }
+
+    return tmp;
+  }();
+
+  static constexpr std::array<bool, BOARD_SIZE2> edgeArray_init = []()
+  {
+    std::array<bool, BOARD_SIZE2> tmp = {};
+
+    for (uint32_t i=0;i<BOARD_SIZE2;i++)
+    {
+      tmp[i] = false;
+    }
+
+    return tmp;
+  }();
 };
 }
